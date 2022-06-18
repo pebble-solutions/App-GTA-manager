@@ -1,8 +1,8 @@
 {
-    "name": "sample",
+    "name": "GTA MAnager",
     "cfg": {
-        "module": "sample",
-        "moduleLabel": "Sample module",
+        "module": "gta",
+        "moduleLabel": "GTA Manager",
         "aside": true,
         "app_mode": "default",
         "ppp": "private",
@@ -19,7 +19,7 @@
     },
     "api": {
         "baseURL": "http://local.fe.tld/api/",
-        "elements": "sample"
+        "elements": "gtaDeclarations"
     },
     "firebaseConfig": {
         "apiKey": "AIzaSyAm-yEHEBuXt_2frDrNrH2o3mT0Ffj_4v0",

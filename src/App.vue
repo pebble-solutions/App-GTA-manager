@@ -40,14 +40,16 @@
 
 		<template v-slot:menu>
 			<AppMenu>
-				<AppMenuItem href="/" look="dark" icon="bi bi-house">Accueil</AppMenuItem>
-				<AppMenuItem href="/about" look="dark" icon="bi bi-app">À propos</AppMenuItem>
+				<AppMenuItem href="/" look="dark" icon="bi bi-calendar2-check">Validation</AppMenuItem>
 			</AppMenu>
 		</template>
 
 		<template v-slot:list>
 			<AppMenu>
 				<AppMenuItem :href="'/element/'+el.id" icon="bi bi-file-earmark" v-for="el in elements" :key="el.id">{{el.name}}</AppMenuItem>
+				<AppMenuItem v-for="semaine in nbSemaine" :key="semaine" href="">
+					<SemaineCardList :nbSemaine="semaine"></SemaineCardList>
+				</AppMenuItem>
 			</AppMenu>
 		</template>
 
@@ -61,12 +63,35 @@
 	
 </template>
 
+<style lang="scss">
+	.cursor-pointer {
+		cursor : pointer;
+	}
+
+	.fs-7 {
+		font-size : 0.9rem;
+	}
+
+	.fs-8 {
+		font-size : 0.8rem;
+	}
+
+	.fs-9 {
+		font-size: 0.7rem;
+	}
+
+	.border-dashed {
+        border-bottom : 1px dashed grey;
+    }
+</style>
+
 <script>
 
 import AppWrapper from '@/components/pebble-ui/AppWrapper.vue'
 import AppMenu from '@/components/pebble-ui/AppMenu.vue'
 import AppMenuItem from '@/components/pebble-ui/AppMenuItem.vue'
 import { mapActions, mapState } from 'vuex'
+import SemaineCardList from '@/components/SemaineCardList.vue'
 
 import CONFIG from "@/config.json"
 
@@ -80,7 +105,9 @@ export default {
 			pending: {
 				elements: true
 			},
-			isConnectedUser: false
+			isConnectedUser: false,
+
+			nbSemaine: null
 		}
 	},
 
@@ -133,14 +160,56 @@ export default {
 			this.listElements();
 		},
 
+		/***
+		 *For know if the actual year is bixestille 
+		 */
+		bixestilleYear() {
+			let actualDate = new Date();
+			let year = actualDate.getFullYear();
+
+			let divYearBy4 = year/4;
+			let arrDivYearBy4 = divYearBy4.toString().split('.');
+
+			if(arrDivYearBy4.length > 1) {
+				return false;
+			} else {
+				let divBy100 = arrDivYearBy4/100;
+				let arrDivBy100 = divBy100.toString.split('.');
+
+				if(arrDivBy100.length > 1) {
+					return true;
+				} else {
+					let divBy400 = arrDivBy100/400;
+					let arrDivBy400 = divBy400.toString().split('.');
+
+					if(arrDivBy400.length > 1) {
+						return false;
+					} else {
+						return true
+					}
+				}
+			}
+		},
+
 		...mapActions(['closeElement'])
 	},
 
 	components: {
 		AppWrapper,
 		AppMenu,
-		AppMenuItem
-	}
+		AppMenuItem,
+		SemaineCardList
+	},
+
+	mounted() {
+		let bixestille = this.bixestilleYear();
+
+		if(bixestille) {
+			this.nbSemaine = 53;
+		} else {
+			this.nbSemaine = 52;
+		}
+	},
 
 }
 </script>
