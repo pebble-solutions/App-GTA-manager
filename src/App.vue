@@ -9,46 +9,32 @@
 		@structure-change="switchStructure">
 
 		<template v-slot:header>
-			<div class="mx-2 d-flex align-items-center" v-if="openedElement">
-				<router-link to="/" custom v-slot="{ navigate, href }">
-					<a class="btn btn-dark me-2" :href="href" @click="navigate">
-						<i class="bi bi-arrow-left"></i>
-					</a>
-				</router-link>
-				<router-link :to="'/element/'+openedElement.id+'/properties'" custom v-slot="{ navigate, href }">
-					<a class="btn btn-dark me-2" :href="href" @click="navigate">
-						<i class="bi bi-file-earmark me-1"></i>
-						{{openedElement.name}}
-					</a>
-				</router-link>
-
-				<div class="dropdown">
-					<button class="btn btn-dark dropdown-toggle" type="button" id="fileDdMenu" data-bs-toggle="dropdown" aria-expanded="false">
-						Fichier
-					</button>
-					<ul class="dropdown-menu" aria-labelledby="fileDdMenu">
-						<li>
-							<router-link :to="'/element/'+openedElement.id+'/informations'" custom v-slot="{ navigate, href }">
-								<a class="dropdown-item" :href="href" @click="navigate">Informations</a>
-							</router-link>
-						</li>
-					</ul>
-				</div>
+			<div class="mx-2">
+				Semaine {{$route.params.id}}
 			</div>
 		</template>
 
 
 		<template v-slot:menu>
 			<AppMenu>
-				<AppMenuItem href="/" look="dark" icon="bi bi-calendar2-check">Validation</AppMenuItem>
+				<AppMenuItem :href="'/week/'+ actualWeek" look="dark" icon="bi bi-calendar2-check">Validation</AppMenuItem>
 			</AppMenu>
 		</template>
 
 		<template v-slot:list>
 			<AppMenu>
-				<AppMenuItem :href="'/element/'+el.id" icon="bi bi-file-earmark" v-for="el in elements" :key="el.id">{{el.name}}</AppMenuItem>
-				<AppMenuItem v-for="semaine in nbSemaine" :key="semaine" href="">
+				<AppMenuItem id="btnBefore" button-style="btn-outline-primary" @click="getWeek('before', '#btnBefore')">
+					<i class="bi bi-chevron-double-up d-block"></i>
+					Semaine précédente
+				</AppMenuItem>
+
+				<AppMenuItem v-for="semaine in nbSemaine" :key="semaine" :href="'/week/'+ semaine" >
 					<SemaineCardList :nbSemaine="semaine"></SemaineCardList>
+				</AppMenuItem>
+
+				<AppMenuItem id="btnAfter" button-style="btn-outline-primary" @click="getWeek('after', '#btnAfter')">
+						Semaine suivante
+						<i class="bi bi-chevron-double-down d-block"></i>
 				</AppMenuItem>
 			</AppMenu>
 		</template>
@@ -90,7 +76,6 @@
 import AppWrapper from '@/components/pebble-ui/AppWrapper.vue'
 import AppMenu from '@/components/pebble-ui/AppMenu.vue'
 import AppMenuItem from '@/components/pebble-ui/AppMenuItem.vue'
-import { mapActions, mapState } from 'vuex'
 import SemaineCardList from '@/components/SemaineCardList.vue'
 
 import CONFIG from "@/config.json"
@@ -107,12 +92,13 @@ export default {
 			},
 			isConnectedUser: false,
 
-			nbSemaine: null
+			nbSemaine: null,
+			actualWeek: null,
+			born: {
+				startWeek:null,
+				endWeek: null
+			}
 		}
-	},
-
-	computed: {
-		...mapState(['elements', 'openedElement'])
 	},
 
 	methods: {
@@ -132,24 +118,6 @@ export default {
 		},
 
 		/**
-		 * Envoie une requête pour lister les éléments et les stocke dans le store
-		 * 
-		 * @param {Object} params Paramètre passés en GET dans l'URL
-		 * @param {String} action 'update' (défaut), 'replace', 'remove'
-		 */
-		listElements(params, action) {
-			action = typeof action === 'undefined' ? 'update' : action;
-			this.$app.listElements(this, params)
-			.then((data) => {
-				this.$store.dispatch('refreshElements', {
-					action,
-					elements: data
-				});
-			})
-			.catch(this.$app.catchError);
-		},
-
-		/**
 		 * Change de structure, vide le store
 		 * 
 		 * @param {Integer} structureId
@@ -157,7 +125,7 @@ export default {
 		switchStructure(structureId) {
 			this.$router.push('/');
 			this.$store.dispatch('switchStructure', structureId);
-			this.listElements();
+
 		},
 
 		/***
@@ -191,7 +159,32 @@ export default {
 			}
 		},
 
-		...mapActions(['closeElement'])
+		/**
+		 * Récupère le numero de semaine de l'année en cours
+		 * 
+		 * @param {Date} actualDate 
+		 */
+		getWeekNumber(actualDate){
+			let year = actualDate.getFullYear();
+			let oneJan = new Date(year, 0, 1);
+			let numberDay = Math.floor((actualDate - oneJan) / (24 * 60 * 60 * 1000));
+
+			return Math.ceil((actualDate.getDay() + 1 + numberDay) / 7);
+		},
+
+		/**
+		 * récupère les semaine avant ou aprés les semaine déja affichées en fonction du paramatre défini 
+		 * 
+		 * @param {String} side		-before : récupère les semaines avant 
+		 * 							-after	: récupère les semaines apres
+		 */
+		getWeek(side, idString) {
+			console.log(side, idString);
+
+			let el = document.querySelector(idString);
+			el.blur();
+			return;
+		}
 	},
 
 	components: {
@@ -209,7 +202,18 @@ export default {
 		} else {
 			this.nbSemaine = 52;
 		}
-	},
 
+		this.$app.addEventListener('structureChanged', (user) => {
+			if(user) {
+				this.actualWeek = this.getWeekNumber(new Date());
+				this.$router.push("/week/"+ this.actualWeek);
+			}
+		});
+
+		this.born.startWeek = this.actualWeek - 5;
+		this.born.endWeek = this.actualWeek + 2;
+
+
+	},
 }
 </script>

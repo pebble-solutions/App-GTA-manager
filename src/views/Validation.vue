@@ -3,8 +3,8 @@
         <table class="table table-bordered table-sm">
             <thead class="align-middle text-center table-secondary">
                 <tr>
-                    <th>Personnel</th>
-                    <th></th>
+                    <th class="col-day">Personnel</th>
+                    <th class="col-day"></th>
 
                     <th class="col-day">
                         <div>Lundi</div>
@@ -41,7 +41,7 @@
                         <div>12.06</div>
                     </th>
 
-                    <th>
+                    <th class="col-day">
                         <div>S12</div>
                     </th>
                 </tr>
@@ -50,20 +50,22 @@
             <tbody v-for="i in [0]" :key="i" class="table-group-divider"> <!-- composant du personnel -->
                 <tr class="text-center">
                     <td rowspan="6" class="text-center">
-                        <div class="fs-4">Seb Dupond</div>
+                        <UserImage :imageUrl="personnel.imageUrl" :name="personnel.cache_nom"></UserImage>
+                        <div class="fs-5">Seb Dupond</div>
                     </td>
 
                     <td class="text-start">
                         Total heures
                     </td>
 
-                    <td>6</td>
-                    <td>8</td>
-                    <td></td>
-                    <td>6</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td  class="col-day">6</td>
+                    <td  class="col-day">8</td>
+                    <td  class="col-day"></td>
+                    <td  class="col-day">6</td>
+                    <td  class="col-day"></td>
+                    <td  class="col-day"></td>
+                    <td  class="col-day"></td>
+                    <td  class="col-day"></td>
                 </tr>
 
                 <tr class="text-center">
@@ -71,72 +73,81 @@
                         Heures normales
                     </td>
 
-                    <td>6</td>
-                    <td>8</td>
-                    <td></td>
-                    <td>6</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="col-day">6</td>
+                    <td class="col-day">8</td>
+                    <td class="col-day"></td>
+                    <td class="col-day">6</td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
                 </tr>
                 <tr class="text-center">
                     <td class="text-start">
                         Heures nuit
                     </td>
 
-                    <td></td>
-                    <td></td>
-                    <td>2</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day">2</td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
                 </tr>
                 <tr class="text-center">
                     <td class="text-start">
                         Prime A
                     </td>
-                    <td></td>
-                    <td></td>
-                    <td>1</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day">1</td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
                 </tr>
                 <tr class="text-center">
                     <td class="text-start">
                         Alerts
                     </td>
-                    <td></td>
-                    <td></td>
-                    <td>AJM</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day">AJM</td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td class="p-2"> <!-- Components pointage-->
+                    <td class="col-day"> <!-- Components pointage-->
                         <PointageCard></PointageCard>
                     </td> 
-                    <td class="p-2"> <!-- Components pointage-->
+                    <td class="col-day"> <!-- Components pointage-->
                         <PointageCard></PointageCard>
                     </td> 
-                    <td class="p-2"> <!-- Components pointage-->
+                    <td class="col-day"> <!-- Components pointage-->
                         <PointageCard></PointageCard>
                     </td> 
-                    <td class="p-2"> <!-- Components pointage-->
+                    <td class="col-day"> <!-- Components pointage-->
                         <PointageCard></PointageCard>
                     </td> 
-                    <td class="p-2"> <!-- Components pointage-->
+                    <td class="col-day"> <!-- Components pointage-->
                         <PointageCard></PointageCard>
                     </td> 
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
+                    <td class="col-day"></td>
                 </tr>
             </tbody>
         </table>
     </div>
+
+    <router-view ></router-view>
 </template>
 
 <style lang="scss">
@@ -153,20 +164,34 @@
     .col-day {
         max-width: 150px;
         min-width: 150px;
+        width: 150px;
     }
+
 </style>
 
 <script>
 import PointageCard from '@/components/PointageCard.vue';
+import UserImage from '@/components/pebble-ui/UserImage.vue';
 
 export default {
 
+    data() {
+        return {
+            personnel : 
+            {
+                cache_nom : "Dupond Seb",
+                imageUrl: "https://cdn-s-www.ledauphine.com/images/A2B51F63-FA5C-463B-B27E-3FDCDBDA7CFD/NW_raw/grumpy-cat-avait-7-ans-photo-twitter-1558093797.jpg",
+            }
+        }
+    },
+
     components: {
-        PointageCard
+        PointageCard,
+        UserImage
     },
 
     mounted() {
-        
+    
     },
 }
 </script>

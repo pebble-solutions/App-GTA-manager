@@ -124,11 +124,6 @@
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
-
-                <button type="button" class="btn btn-outline-primary btn-sm my-1">
-                    <i class="bi bi-plus-circle"></i>
-                    Autres déclarations
-                </button>
             </div>
 
 
@@ -174,9 +169,6 @@
 
 
         </div>
-
-        <!-- <router-view></router-view> -->
-        
     </AppModal>
 </template>
 
