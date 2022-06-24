@@ -22,14 +22,16 @@
 		</template>
 
 		<template v-slot:list>
-			<AppMenu>
+			<Spinner v-if="pending.semaines"></Spinner>
+
+			<AppMenu v-if="semaines">
 				<AppMenuItem id="btnBefore" button-style="btn-outline-primary" @click="getWeek('before', '#btnBefore')">
 					<i class="bi bi-chevron-double-up d-block"></i>
 					Semaine précédente
 				</AppMenuItem>
 
-				<AppMenuItem v-for="semaine in nbSemaine" :key="semaine" :href="'/week/'+ semaine" >
-					<SemaineCardList :nbSemaine="semaine"></SemaineCardList>
+				<AppMenuItem v-for="semaine in semaines" :key="semaine.week" :href="'/week/'+ semaine.week" >
+					<SemaineCardList :semaine="semaine"></SemaineCardList>
 				</AppMenuItem>
 
 				<AppMenuItem id="btnAfter" button-style="btn-outline-primary" @click="getWeek('after', '#btnAfter')">
@@ -73,10 +75,13 @@
 
 <script>
 
+import {weekNumber} from 'weeknumber'
+
 import AppWrapper from '@/components/pebble-ui/AppWrapper.vue'
 import AppMenu from '@/components/pebble-ui/AppMenu.vue'
 import AppMenuItem from '@/components/pebble-ui/AppMenuItem.vue'
 import SemaineCardList from '@/components/SemaineCardList.vue'
+import Spinner from '@/components/pebble-ui/Spinner.vue'
 
 import CONFIG from "@/config.json"
 
@@ -88,18 +93,24 @@ export default {
 			cfgMenu: CONFIG.cfgMenu,
 			cfgSlots: CONFIG.cfgSlots,
 			pending: {
-				elements: true
+				semaines: true
 			},
 			isConnectedUser: false,
 
-			nbSemaine: null,
 			actualWeek: null,
-			born: {
-				startWeek:null,
-				endWeek: null
-			}
+			interval: {
+				startWeek:'',
+				endWeek: ''
+			},
+			semaines: null
 		}
 	},
+
+	watch: {
+		'$route'(to) {
+			this.actualWeek = to.params.id;
+		}
+	},	
 
 	methods: {
 		/**
@@ -128,90 +139,90 @@ export default {
 
 		},
 
-		/***
-		 *For know if the actual year is bixestille 
-		 */
-		bixestilleYear() {
-			let actualDate = new Date();
-			let year = actualDate.getFullYear();
-
-			let divYearBy4 = year/4;
-			let arrDivYearBy4 = divYearBy4.toString().split('.');
-
-			if(arrDivYearBy4.length > 1) {
-				return false;
-			} else {
-				let divBy100 = arrDivYearBy4/100;
-				let arrDivBy100 = divBy100.toString.split('.');
-
-				if(arrDivBy100.length > 1) {
-					return true;
-				} else {
-					let divBy400 = arrDivBy100/400;
-					let arrDivBy400 = divBy400.toString().split('.');
-
-					if(arrDivBy400.length > 1) {
-						return false;
-					} else {
-						return true
-					}
-				}
-			}
-		},
-
 		/**
 		 * Récupère le numero de semaine de l'année en cours
 		 * 
-		 * @param {Date} actualDate 
+		 * @param {Date} date 
 		 */
-		getWeekNumber(actualDate){
-			let year = actualDate.getFullYear();
-			let oneJan = new Date(year, 0, 1);
-			let numberDay = Math.floor((actualDate - oneJan) / (24 * 60 * 60 * 1000));
-
-			return Math.ceil((actualDate.getDay() + 1 + numberDay) / 7);
+		getWeekNumber(date){
+			return weekNumber(date);
 		},
 
 		/**
 		 * récupère les semaine avant ou aprés les semaine déja affichées en fonction du paramatre défini 
 		 * 
-		 * @param {String} side		-before : récupère les semaines avant 
-		 * 							-after	: récupère les semaines apres
+		 * @param {String} side			-before : récupère les semaines avant 
+		 * 								-after	: récupère les semaines apres
+		 * @param {String} idButton		id de l'élément button 
+		 * @param {Number} nb			nombre de semaine ajoutée
 		 */
-		getWeek(side, idString) {
-			console.log(side, idString);
-
-			let el = document.querySelector(idString);
+		getWeek(side, idButton, nb) {
+			nb = typeof nb === 'undefined' ? 5 : nb;
+			let el = document.querySelector(idButton);
 			el.blur();
-			return;
-		}
+
+			let newStartWeek;
+			let newEndWeek;
+			let order=null;
+
+			if(side === 'before') {
+				newStartWeek = parseInt(this.interval.startWeek)-nb;
+				newEndWeek = parseInt(this.interval.startWeek)-1;
+				order = "DESC"
+			} else {
+				newStartWeek = parseInt(this.interval.endWeek)+1;
+				newEndWeek = parseInt(this.interval.endWeek)+nb;
+			}
+
+			let urlApi = 'gtaPeriode/GET/listWeeksAnalytics?week_start='+newStartWeek+'&week_end='+newEndWeek;
+			if(side == 'before') {
+				urlApi += '&order_direction='+order;
+			}
+
+			this.$app.apiGet(urlApi)
+			.then( (data) => {
+				for(let index in data) {
+					side === 'before' ? this.semaines.unshift(data[index]) : this.semaines.push(data[index]);
+				}
+
+				side === 'before' ? this.interval.startWeek = newStartWeek : this.interval.endWeek = newEndWeek;
+			})
+			.catch(this.$app.catchError);
+		},
 	},
 
 	components: {
 		AppWrapper,
 		AppMenu,
 		AppMenuItem,
-		SemaineCardList
-	},
+		SemaineCardList,
+		Spinner
+},
 
 	mounted() {
-		let bixestille = this.bixestilleYear();
-
-		if(bixestille) {
-			this.nbSemaine = 53;
-		} else {
-			this.nbSemaine = 52;
-		}
+		let actualDate = new Date();
+		let year = actualDate.getFullYear();
 
 		this.$app.addEventListener('structureChanged', (user) => {
 			if(user) {
-				this.actualWeek = this.getWeekNumber(new Date());
+				this.actualWeek = this.getWeekNumber(actualDate);
 				this.$router.push("/week/"+ this.actualWeek);
+
+
+				this.interval.startWeek = year.toString() + (this.actualWeek-5);
+				this.interval.endWeek = year.toString() + (this.actualWeek+2);
+
+				let urlApi = 'gtaPeriode/GET/listWeeksAnalytics?week_start=' + this.interval.startWeek + '&week_end=' + this.interval.endWeek;
+
+				this.$app.apiGet(urlApi)
+				.then( (data) => {
+					this.semaines = data;
+					this.pending.semaines = false;
+				})
+				.catch(this.$app.catchError);
 			}
 		});
 
-		this.born.startWeek = this.actualWeek - 5;
-		this.born.endWeek = this.actualWeek + 2;
 
 
 	},

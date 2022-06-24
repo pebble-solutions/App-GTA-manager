@@ -174,6 +174,7 @@ import PointageCard from '@/components/PointageCard.vue';
 import UserImage from '@/components/pebble-ui/UserImage.vue';
 
 export default {
+    inheritAttrs: false,
 
     data() {
         return {
