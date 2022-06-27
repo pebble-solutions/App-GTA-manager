@@ -1,11 +1,11 @@
 <template>
     <Spinner v-if="pending.week" label="Chargement des données..."></Spinner>
     <div class="table-responsive" v-else>
-        <table class="table table-bordered table-sm">
+        <table class="table table-bordered table-sm fs-7">
             <thead class="align-middle text-center table-secondary">
                 <tr>
-                    <th class="col-day">Personnel</th>
-                    <th class="col-day"></th>
+                    <th>Personnel</th>
+                    <th></th>
 
                     <th class="col-day" v-for="day in weekDays" :key="'day-header-'+day.getDate()">
                         <div>{{day.toLocaleDateString('fr-FR', {weekday: 'long'})}}</div>
@@ -21,7 +21,7 @@
             <tbody v-for="personnel in personnels_declarations" :key="'personnel-'+personnel.id" class="table-group-divider"> <!-- composant du personnel -->
                 <tr class="text-center">
                     <td rowspan="6" class="text-center">
-                        <UserImage :name="personnel.cache_nom"></UserImage>
+                        <UserImage :name="personnel.cache_nom" size="user-image-lg" class-name="my-1"></UserImage>
                         <div>{{personnel.cache_nom}}</div>
                     </td>
 
@@ -32,34 +32,14 @@
                     <td v-for="day in week" :key="'th-'+day"></td>
                 </tr>
 
-                <tr class="text-center">
-                    <td class="text-start">
-                        Heures normales
+                <!-- À guillaume : en chantier -->
+                <!-- <tr v-for="compteur in getCompteurs(personnel)" :key="'personnel-compteur-'+personnel.id+'-'+compteur.key">
+                    <td class="text-start">{{compteur.label}}</td>
+                    <td v-for="day in weekDays" :key="'personnel-compteur-'+personnel.id+'-'+compteur.key+'-'+day.getDate()">
+                        {{compteur.values[day.getDate()]}}
                     </td>
+                </tr> -->
 
-                    <td v-for="day in week" :key="'hnorm-'+day"></td>
-                </tr>
-                <tr class="text-center">
-                    <td class="text-start">
-                        Heures nuit
-                    </td>
-
-                    <td v-for="day in week" :key="'hnuit-'+day"></td>
-                </tr>
-                <tr class="text-center">
-                    <td class="text-start">
-                        Prime A
-                    </td>
-
-                    <td v-for="day in week" :key="'primesA-'+day"></td>
-                </tr>
-                <tr class="text-center">
-                    <td class="text-start">
-                        Alerts
-                    </td>
-
-                    <td v-for="day in week" :key="'hnorm-'+day"></td>
-                </tr>
                 <tr>
                     <td></td>
 
@@ -161,10 +141,10 @@ export default {
     },
 
     components: {
-    PointageCard,
-    UserImage,
-    Spinner
-},
+        PointageCard,
+        UserImage,
+        Spinner
+    },
 
     methods: {
         /**
@@ -231,7 +211,28 @@ export default {
          */
         getPeriodesFromDate(periodes, date) {
             return periodes.filter(e => e.period_year == date.getFullYear() && e.period_month == (date.getMonth()+1) && e.period_day == date.getDate());
-        }
+        },
+
+        // À guillaume : en chantier
+        // getCompteurs(personnel) {
+        //     let compteurs = {};
+
+        //     personnel.gta_periodes.forEach(gta_periode => {
+        //         gta_periode.structure_temps_declarations.forEach(std => {
+        //             let dd = new Date(std.dd_correction ? std.dd_correction : std.dd);
+        //             let df = new Date(std.df_correction ? std.df_correction : std.df);
+
+        //             let ddp = new Date(std.ddp_correction ? std.ddp_correction : std.ddp);
+        //             let dfp = new Date(std.dfp_correction ? std.dfp_correction : std.dfp);
+
+        //             let hours = Math.abs(dd - df) / 36e5 - Math.abs(ddp - dfp) / 36e5;
+
+        //             if (!compteurs.normal) {
+        //                 compteurs.normal = {};
+        //             }
+        //         });
+        //     });
+        // }
     },
 
     mounted() {
