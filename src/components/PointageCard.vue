@@ -1,7 +1,12 @@
 <template>
-    <div class="card mb-2 fs-7" :class="{'border border-info shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click="selected = !selected">
-        <div class="card-body text-center">
-            <div class="text-end">
+    <div class="card border border-2 mb-2 fs-7" :class="{'border border-info border-2 shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click="selectedAction()">
+        <div class="card-body text-center d-flex justify-content-between align-items-center">
+            <div class="text-secondary">
+                <i class="bi bi-square" v-if="!selected"></i>
+                <i class="bi bi-check2-square square-color" v-else></i>
+            </div>  
+
+            <div>
                 <router-link :to="{name: 'EditPointage'}" custom v-slot="{navigate, href}">
                     <a :href="href" @click.stop="navigate" class="text-primary text-decoration-none">
                         <i class="bi bi-pencil-square "></i>
@@ -98,6 +103,10 @@
     .shadow-info {
         box-shadow: 0 0.5rem 1rem rgba(13, 202, 240, .15);
     }
+    
+    .square-color {
+        color: rgba(13, 202, 240);
+    }
 
     .slide-enter-active, 
     .slide-leave-active {
@@ -130,6 +139,28 @@ export default {
             displayMoreInfosReport : false,
             selected: false,
             validate: false
+        }
+    },
+
+    methods: {
+        selectedAction() {
+            this.selected = !this.selected;
+
+            let options = [this.pointage];
+
+            console.log(this.pointage);
+
+            if(this.selected) {
+                options.push('add');
+            } else {
+                options.push('remove');
+            }
+
+            console.log('OPTIONS §§§§§ ', options);
+
+            this.$emit('selected-pointage', options)
+
+
         }
     },
 }

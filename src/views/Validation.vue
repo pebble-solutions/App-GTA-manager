@@ -6,66 +6,29 @@
                     <th class="col-day">Personnel</th>
                     <th class="col-day"></th>
 
-                    <th class="col-day">
-                        <div>Lundi</div>
-                        <div>06.06</div>
+                    <th class="col-day" v-for="day in weekDays" :key="'day-header-'+day.getDate()">
+                        <div>{{day.toLocaleDateString('fr-FR', {weekday: 'long'})}}</div>
+                        <div>{{dateToDayMonth(day)}}</div>
                     </th>
 
                     <th class="col-day">
-                        <div>Mardi</div>
-                        <div>07.06</div>
-                    </th>
-
-                    <th class="col-day">
-                        <div>Mercredi</div>
-                        <div>08.06</div>
-                    </th>
-
-                    <th class="col-day">
-                        <div>Jeudi</div>
-                        <div>09.06</div>
-                    </th>
-
-                    <th class="col-day">
-                        <div>Vendredi</div>
-                        <div>10.06</div>
-                    </th>
-
-                    <th class="col-day">
-                        <div>Samedi</div>
-                        <div>11.06</div>
-                    </th>
-
-                    <th class="col-day">
-                        <div>Dimanche</div>
-                        <div>12.06</div>
-                    </th>
-
-                    <th class="col-day">
-                        <div>S12</div>
+                        <div>S{{semaine.week}}</div>
                     </th>
                 </tr>
             </thead>
 
-            <tbody v-for="i in [0]" :key="i" class="table-group-divider"> <!-- composant du personnel -->
+            <tbody v-for="personnel in personnels_declarations" :key="'personnel-'+personnel.id" class="table-group-divider"> <!-- composant du personnel -->
                 <tr class="text-center">
                     <td rowspan="6" class="text-center">
-                        <UserImage :imageUrl="personnel.imageUrl" :name="personnel.cache_nom"></UserImage>
-                        <div class="fs-5">Seb Dupond</div>
+                        <UserImage :name="personnel.cache_nom"></UserImage>
+                        <div>{{personnel.cache_nom}}</div>
                     </td>
 
                     <td class="text-start">
                         Total heures
                     </td>
 
-                    <td  class="col-day">6</td>
-                    <td  class="col-day">8</td>
-                    <td  class="col-day"></td>
-                    <td  class="col-day">6</td>
-                    <td  class="col-day"></td>
-                    <td  class="col-day"></td>
-                    <td  class="col-day"></td>
-                    <td  class="col-day"></td>
+                    <td v-for="day in week" :key="'th-'+day"></td>
                 </tr>
 
                 <tr class="text-center">
@@ -73,78 +36,54 @@
                         Heures normales
                     </td>
 
-                    <td class="col-day">6</td>
-                    <td class="col-day">8</td>
-                    <td class="col-day"></td>
-                    <td class="col-day">6</td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
+                    <td v-for="day in week" :key="'hnorm-'+day"></td>
                 </tr>
                 <tr class="text-center">
                     <td class="text-start">
                         Heures nuit
                     </td>
 
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day">2</td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
+                    <td v-for="day in week" :key="'hnuit-'+day"></td>
                 </tr>
                 <tr class="text-center">
                     <td class="text-start">
                         Prime A
                     </td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day">1</td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
+
+                    <td v-for="day in week" :key="'primesA-'+day"></td>
                 </tr>
                 <tr class="text-center">
                     <td class="text-start">
                         Alerts
                     </td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day">AJM</td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
+
+                    <td v-for="day in week" :key="'hnorm-'+day"></td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td class="col-day"> <!-- Components pointage-->
-                        <PointageCard></PointageCard>
-                    </td> 
-                    <td class="col-day"> <!-- Components pointage-->
-                        <PointageCard></PointageCard>
-                    </td> 
-                    <td class="col-day"> <!-- Components pointage-->
-                        <PointageCard></PointageCard>
-                    </td> 
-                    <td class="col-day"> <!-- Components pointage-->
-                        <PointageCard></PointageCard>
-                    </td> 
-                    <td class="col-day"> <!-- Components pointage-->
-                        <PointageCard></PointageCard>
-                    </td> 
-                    <td class="col-day"></td>
-                    <td class="col-day"></td>
+
+                    <td class="col-day" v-for="day in weekDays" :key="'personnel-'+personnel.id+'-'+day.getDate()">
+                        <template v-for="periode in getPeriodesFromDate(personnel.gta_periodes, day)">
+                            <PointageCard @selected-pointage="selectedPointage()" v-for="std in periode.structure_temps_declarations" :key="'declaration-'+periode.id+'-'+std.id"></PointageCard>
+                        </template>
+                    </td>
+
                     <td class="col-day"></td>
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <div v-if="selectedPointages.length > 0" class="p-3 fixed-bottom bg-light shadow border-top">
+        <button type="submit" @click.prevent="validatePointage()" class="btn btn-primary col-6" :disabled="!formReady || pending.validate">
+            <span v-if="pending.validate">En cours...</span>
+            <span v-else>Valider</span>
+        </button>
+
+        <button type ="submit" @click.prevent="rejectPointage()" class="btn btn-primary col-6" :disabled="!formReady || pending.validate">
+            <span v-if="pending.validate">En cours...</span>
+            <span v-else>Rejeter</span>
+        </button>
     </div>
 
     <router-view ></router-view>
@@ -176,13 +115,37 @@ import UserImage from '@/components/pebble-ui/UserImage.vue';
 export default {
     inheritAttrs: false,
 
+    props: {
+        semaine: Object
+    },
+
     data() {
         return {
-            personnel : 
-            {
-                cache_nom : "Dupond Seb",
-                imageUrl: "https://cdn-s-www.ledauphine.com/images/A2B51F63-FA5C-463B-B27E-3FDCDBDA7CFD/NW_raw/grumpy-cat-avait-7-ans-photo-twitter-1558093797.jpg",
+            personnels_declarations: [],
+            gta_codages: [],
+            selectedPointages: [],
+            week: ['Monday', 'tuesday', 'wednesday', 'thursday', 'Friday', 'Saturday', 'Sunday'],
+            resumePointageOptions: ['Total heures', 'Heures normales', 'Heures nuit', 'Prime A', 'Alerts']
+        }
+    },
+
+    computed: {
+        /**
+         * Retourne la liste des jours entre dd et df.
+         * La valeur retournée est une collection d'objets Date
+         * @returns {Array}
+         */
+        weekDays() {
+            let dd = new Date(this.semaine.dd);
+            let days = [];
+
+            for (let i=0; i<7; i++) {
+                let date = new Date(dd);
+                date.setDate(dd.getDate() + i);
+                days.push(date);
             }
+
+            return days;
         }
     },
 
@@ -191,8 +154,73 @@ export default {
         UserImage
     },
 
-    mounted() {
-    
+    methods: {
+        /**
+         * add or remove in array selectedPointages an pointage
+         * 
+         * @param {Array} payload 
+         */
+        selectedPointage(payload) {
+            console.log(payload);
+            if(payload[1] === 'add') {
+                this.selectedPointages.push(payload[0]);
+            } else {
+                for(let pointage in this.selectedPointages) {
+                    if(this.selectedPointages[pointage] == payload[0]) {
+                        this.selectedPointages[pointage].splice();
+                    }
+                }
+            }
+        },
+
+        /**
+         * Get the day number and month number 
+         * if the length is equal at 1, add '0' before the number
+         * 
+         * @param {Date} date 
+         */
+        dateToDayMonth(date) {
+            let dd = new Date(date);
+            return dd.toLocaleDateString('fr-FR', {day:'2-digit', month: '2-digit'});
+        },
+
+        loadDeclarations() {
+            let apiUrl = 'structureTempsDeclaration/GET/listDeclarations';
+
+            this.$app.apiGet(apiUrl, {
+                dd: this.semaine.dd,
+                df: this.semaine.df,
+                group_by_personnel: true
+            })
+            .then( (data) => {
+                console.log(data);
+                this.personnels_declarations = data.personnels;
+                this.gta_codages = data.gta_codages;
+            })
+            .catch(this.$app.catchError);
+        },
+
+        /**
+         * Retourne une collection de période basées sur le même jour que la date passée 
+         * en paramètre
+         * 
+         * @param {Array} periodes Liste des periodes à analyser
+         * @param {Date} date L'objet représentant le jour
+         * 
+         * @returns {Array}
+         */
+        getPeriodesFromDate(periodes, date) {
+            return periodes.filter(e => e.period_year == date.getFullYear() && e.period_month == (date.getMonth()+1) && e.period_day == date.getDate());
+        }
     },
+
+    updated () {
+        //this.loadDeclarations();
+    },
+
+    mounted() {
+        this.loadDeclarations();
+    }
+
 }
 </script>

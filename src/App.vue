@@ -9,15 +9,15 @@
 		@structure-change="switchStructure">
 
 		<template v-slot:header>
-			<div class="mx-2">
-				Semaine {{$route.params.id}}
+			<div class="mx-2" v-if="selectedWeek">
+				Semaine {{$route.params.id}} : <DateInterval :dd="selectedWeek.dd" :df="selectedWeek.df"></DateInterval>
 			</div>
 		</template>
 
 
 		<template v-slot:menu>
 			<AppMenu>
-				<AppMenuItem :href="'/week/'+ actualWeek" look="dark" icon="bi bi-calendar2-check">Validation</AppMenuItem>
+				<AppMenuItem :href="'/week/'+ currentWeek" look="dark" icon="bi bi-calendar2-check">Validation</AppMenuItem>
 			</AppMenu>
 		</template>
 
@@ -25,16 +25,18 @@
 			<Spinner v-if="pending.semaines"></Spinner>
 
 			<AppMenu v-if="semaines">
-				<AppMenuItem id="btnBefore" button-style="btn-outline-primary" @click="getWeek('before', '#btnBefore')">
+				<Spinner v-if="pending.moreWeeks"></Spinner>
+				<AppMenuItem id="btnBefore" button-style="btn-secondary" @click="getWeeks('before', '#btnBefore')" v-else>
 					<i class="bi bi-chevron-double-up d-block"></i>
 					Semaine précédente
 				</AppMenuItem>
 
 				<AppMenuItem v-for="semaine in semaines" :key="semaine.week" :href="'/week/'+ semaine.week" >
-					<SemaineCardList :semaine="semaine"></SemaineCardList>
+					<WeekListItem :semaine="semaine"></WeekListItem>
 				</AppMenuItem>
 
-				<AppMenuItem id="btnAfter" button-style="btn-outline-primary" @click="getWeek('after', '#btnAfter')">
+				<Spinner v-if="pending.moreWeeks"></Spinner>
+				<AppMenuItem id="btnAfter" button-style="btn-secondary" @click="getWeeks('after', '#btnAfter')" v-else>
 						Semaine suivante
 						<i class="bi bi-chevron-double-down d-block"></i>
 				</AppMenuItem>
@@ -42,8 +44,8 @@
 		</template>
 
 		<template v-slot:core>
-			<div class="px-2 bg-light">
-				<router-view :cfg="cfg" v-if="isConnectedUser" />
+			<div class="bg-light">
+				<router-view :cfg="cfg" :semaine="selectedWeek" v-if="isConnectedUser" />
 			</div>
 		</template>
 
@@ -80,10 +82,11 @@ import {weekNumber} from 'weeknumber'
 import AppWrapper from '@/components/pebble-ui/AppWrapper.vue'
 import AppMenu from '@/components/pebble-ui/AppMenu.vue'
 import AppMenuItem from '@/components/pebble-ui/AppMenuItem.vue'
-import SemaineCardList from '@/components/SemaineCardList.vue'
+import WeekListItem from '@/components/WeekListItem.vue'
 import Spinner from '@/components/pebble-ui/Spinner.vue'
 
 import CONFIG from "@/config.json"
+import DateInterval from './components/DateInterval.vue'
 
 export default {
 
@@ -93,23 +96,33 @@ export default {
 			cfgMenu: CONFIG.cfgMenu,
 			cfgSlots: CONFIG.cfgSlots,
 			pending: {
-				semaines: true
+				semaines: true,
+				moreWeeks: false
 			},
 			isConnectedUser: false,
 
-			actualWeek: null,
-			interval: {
-				startWeek:'',
-				endWeek: ''
-			},
+			currentWeek: null,
+			interval: [0, 0],
 			semaines: null
 		}
 	},
 
+	computed: {
+		selectedWeek() {
+			let week=null;
+
+			if(this.semaines) {
+				week = this.semaines.find((e) => e.week == this.currentWeek);
+			}
+
+			return week;
+		}
+	},
+	
 	watch: {
 		'$route'(to) {
-			this.actualWeek = to.params.id;
-		}
+			this.currentWeek = to.params.id;
+		},
 	},	
 
 	methods: {
@@ -156,70 +169,115 @@ export default {
 		 * @param {String} idButton		id de l'élément button 
 		 * @param {Number} nb			nombre de semaine ajoutée
 		 */
-		getWeek(side, idButton, nb) {
+		getWeeks(side, idButton, nb) {
 			nb = typeof nb === 'undefined' ? 5 : nb;
 			let el = document.querySelector(idButton);
 			el.blur();
 
 			let newStartWeek;
 			let newEndWeek;
-			let order=null;
+			let direction;
+			let appendMode;
 
 			if(side === 'before') {
-				newStartWeek = parseInt(this.interval.startWeek)-nb;
-				newEndWeek = parseInt(this.interval.startWeek)-1;
-				order = "DESC"
+				newStartWeek = parseInt(this.interval[0])-nb;
+				newEndWeek = parseInt(this.interval[0])-1;
+				direction = "DESC";
+				appendMode = 'unshift';
 			} else {
-				newStartWeek = parseInt(this.interval.endWeek)+1;
-				newEndWeek = parseInt(this.interval.endWeek)+nb;
+				newStartWeek = parseInt(this.interval[1])+1;
+				newEndWeek = parseInt(this.interval[1])+nb;
+				direction = "ASC";
+				appendMode = 'push';
 			}
 
-			let urlApi = 'gtaPeriode/GET/listWeeksAnalytics?week_start='+newStartWeek+'&week_end='+newEndWeek;
-			if(side == 'before') {
-				urlApi += '&order_direction='+order;
-			}
+			this.loadWeeks(newStartWeek, newEndWeek, {
+				direction,
+				appendMode,
+				pending: 'moreWeeks'
+			});
+		},
 
-			this.$app.apiGet(urlApi)
+		/**
+		 * Charge les informations sur une liste de semaine depuis l'API
+		 * 
+		 * @param {Number} start La semaine de départ au format AAAASS (SS étant le num de semaine)
+		 * @param {Number} end La semaine de fin au format AAAASS
+		 * @param {Object} options 
+		 * - direction					Le sens du trie des semaines (ASC défaut ou DESC)
+		 * - pending					La clé du pending à utiliser
+		 * - appendMode					Le mode d'insertion dans la collection (unshift, push, replace)
+		 * 
+		 * @returns {Promise}
+		 */
+		loadWeeks(start, end, options) {
+			start = typeof start === 'undefined' ? this.interval[0] : start;
+			end = typeof end === 'undefined' ? this.interval[1] : end;
+			options = typeof options === 'undefined' ? {} : options;
+
+			if (!options.direction) { options.direction = 'ASC'; }
+			if (!options.pending) { options.pending = 'semaines'; }
+			if (!options.appendMode) { options.appendMode = 'replace'; }
+
+			let urlApi = 'gtaPeriode/GET/listWeeksAnalytics?week_start=' + start + '&week_end=' + end + '&order_direction=' + options.direction;
+
+			this.pending[options.pending] = true;
+
+			return this.$app.apiGet(urlApi)
 			.then( (data) => {
-				for(let index in data) {
-					side === 'before' ? this.semaines.unshift(data[index]) : this.semaines.push(data[index]);
-				}
 
-				side === 'before' ? this.interval.startWeek = newStartWeek : this.interval.endWeek = newEndWeek;
+				if (options.appendMode == 'unshift') {
+					for (let index in data) {
+						this.semaines.unshift(data[index]);
+					}
+					this.interval[0] = start;
+				}
+				else if (options.appendMode == 'push') {
+					for (let index in data) {
+						this.semaines.push(data[index]);
+					}
+					this.interval[1] = end;
+				}
+				else {
+					this.semaines = data;
+					this.interval[0] = start;
+					this.interval[1] = end;
+				}
+				this.pending[options.pending] = false;
 			})
 			.catch(this.$app.catchError);
-		},
+		}
 	},
 
 	components: {
-		AppWrapper,
-		AppMenu,
-		AppMenuItem,
-		SemaineCardList,
-		Spinner
+    AppWrapper,
+    AppMenu,
+    AppMenuItem,
+    WeekListItem,
+    Spinner,
+    DateInterval
 },
 
 	mounted() {
-		let actualDate = new Date();
-		let year = actualDate.getFullYear();
 
+		this.$router.push('/');
+		
 		this.$app.addEventListener('structureChanged', (user) => {
 			if(user) {
-				this.actualWeek = this.getWeekNumber(actualDate);
-				this.$router.push("/week/"+ this.actualWeek);
+				let today = new Date();
+				let year = today.getFullYear();
 
+				/* Il est nécessaire de développer une fonction pour traiter les changement d'année :
+				 * Actuellement, si la currentWeek est 202201, la currentWeek-5 est 202196 ce qui n'est pas possible.
+				 * Il faut voir au niveau des fonction natives de JavaScript qui peuvent potentiellement
+				 * permettre de faire des calcule de date (ex : +14 jours ou -35 jours)
+				 */
+				this.currentWeek = parseInt(`${year}${this.getWeekNumber(today)}`);
 
-				this.interval.startWeek = year.toString() + (this.actualWeek-5);
-				this.interval.endWeek = year.toString() + (this.actualWeek+2);
+				let start = this.currentWeek-5;
+				let end = (this.currentWeek+2);
 
-				let urlApi = 'gtaPeriode/GET/listWeeksAnalytics?week_start=' + this.interval.startWeek + '&week_end=' + this.interval.endWeek;
-
-				this.$app.apiGet(urlApi)
-				.then( (data) => {
-					this.semaines = data;
-					this.pending.semaines = false;
-				})
-				.catch(this.$app.catchError);
+				this.loadWeeks(start, end);
 			}
 		});
 
