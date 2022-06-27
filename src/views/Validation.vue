@@ -1,5 +1,6 @@
 <template>
-    <div class="table-responsive">
+    <Spinner v-if="pending.week" label="Chargement des données..."></Spinner>
+    <div class="table-responsive" v-else>
         <table class="table table-bordered table-sm">
             <thead class="align-middle text-center table-secondary">
                 <tr>
@@ -111,6 +112,7 @@
 <script>
 import PointageCard from '@/components/PointageCard.vue';
 import UserImage from '@/components/pebble-ui/UserImage.vue';
+import Spinner from '../components/pebble-ui/Spinner.vue';
 
 export default {
     inheritAttrs: false,
@@ -125,7 +127,10 @@ export default {
             gta_codages: [],
             selectedPointages: [],
             week: ['Monday', 'tuesday', 'wednesday', 'thursday', 'Friday', 'Saturday', 'Sunday'],
-            resumePointageOptions: ['Total heures', 'Heures normales', 'Heures nuit', 'Prime A', 'Alerts']
+            resumePointageOptions: ['Total heures', 'Heures normales', 'Heures nuit', 'Prime A', 'Alerts'],
+            pending: {
+                week: true
+            }
         }
     },
 
@@ -149,10 +154,17 @@ export default {
         }
     },
 
-    components: {
-        PointageCard,
-        UserImage
+    watch: {
+        semaine() {
+            this.loadDeclarations();
+        }
     },
+
+    components: {
+    PointageCard,
+    UserImage,
+    Spinner
+},
 
     methods: {
         /**
@@ -184,8 +196,14 @@ export default {
             return dd.toLocaleDateString('fr-FR', {day:'2-digit', month: '2-digit'});
         },
 
+
+        /**
+         * Charge les déclarations depuis le serveur
+         */
         loadDeclarations() {
             let apiUrl = 'structureTempsDeclaration/GET/listDeclarations';
+
+            this.pending.week = true;
 
             this.$app.apiGet(apiUrl, {
                 dd: this.semaine.dd,
@@ -196,6 +214,8 @@ export default {
                 console.log(data);
                 this.personnels_declarations = data.personnels;
                 this.gta_codages = data.gta_codages;
+
+                this.pending.week = false;
             })
             .catch(this.$app.catchError);
         },
@@ -212,10 +232,6 @@ export default {
         getPeriodesFromDate(periodes, date) {
             return periodes.filter(e => e.period_year == date.getFullYear() && e.period_month == (date.getMonth()+1) && e.period_day == date.getDate());
         }
-    },
-
-    updated () {
-        //this.loadDeclarations();
     },
 
     mounted() {

@@ -31,7 +31,7 @@
 					Semaine précédente
 				</AppMenuItem>
 
-				<AppMenuItem v-for="semaine in semaines" :key="semaine.week" :href="'/week/'+ semaine.week" >
+				<AppMenuItem v-for="semaine in semaines" :key="semaine.week" :href="'/week/'+ semaine.year + semaine.week" >
 					<WeekListItem :semaine="semaine"></WeekListItem>
 				</AppMenuItem>
 
@@ -108,11 +108,15 @@ export default {
 	},
 
 	computed: {
+		/**
+		 * Retourne la semaine sélectionnée
+		 * @returns {Object}
+		 */
 		selectedWeek() {
 			let week=null;
 
 			if(this.semaines) {
-				week = this.semaines.find((e) => e.week == this.currentWeek);
+				week = this.semaines.find((e) => `${e.year}${e.week}` == this.currentWeek);
 			}
 
 			return week;
@@ -250,13 +254,13 @@ export default {
 	},
 
 	components: {
-    AppWrapper,
-    AppMenu,
-    AppMenuItem,
-    WeekListItem,
-    Spinner,
-    DateInterval
-},
+		AppWrapper,
+		AppMenu,
+		AppMenuItem,
+		WeekListItem,
+		Spinner,
+		DateInterval
+	},
 
 	mounted() {
 
@@ -277,7 +281,10 @@ export default {
 				let start = this.currentWeek-5;
 				let end = (this.currentWeek+2);
 
-				this.loadWeeks(start, end);
+				this.loadWeeks(start, end)
+				.then(() => {
+					this.$router.push('/week/'+this.currentWeek);
+				});
 			}
 		});
 
