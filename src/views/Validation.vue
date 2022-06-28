@@ -1,5 +1,5 @@
 <template>
-    <Spinner v-if="pending.week" label="Chargement des données..."></Spinner>
+    <Spinner v-if="pending.week"></Spinner>
     <div class="table-responsive" v-else>
         <table class="table table-bordered table-sm fs-7">
             <thead class="align-middle text-center table-secondary">
@@ -40,13 +40,13 @@
                     </td>
                 </tr> -->
 
-                <tr>
+                <tr v-if="personnels_declarations">
                     <td></td>
 
                     <td class="col-day" v-for="day in weekDays" :key="'personnel-'+personnel.id+'-'+day.getDate()">
                         <template v-for="periode in getPeriodesFromDate(personnel.gta_periodes, day)">
                             <PointageCard 
-                                @selected-pointage="selectedPointage()"
+                                @select-pointage="selectedPointage"
 
                                 :pointage="std" 
                                 :gta_declarations="periode.gta_declarations"
@@ -63,19 +63,19 @@
         </table>
     </div>
 
-    <div v-if="selectedPointages.length > 0" class="p-3 fixed-bottom bg-light shadow border-top">
-        <button type="submit" @click.prevent="validatePointage()" class="btn btn-primary col-6" :disabled="!formReady || pending.validate">
+    <div v-if="selectedPointages.length > 0" class="p-3 fixed-bottom bg-light shadow border-top ms-auto text-center" :style="sizeBar">
+        <button type="submit" @click.prevent="validatePointage()" class="btn btn-primary col-2 mx-2" :disabled="!formReady || pending.validate">
             <span v-if="pending.validate">En cours...</span>
             <span v-else>Valider</span>
         </button>
 
-        <button type ="submit" @click.prevent="rejectPointage()" class="btn btn-primary col-6" :disabled="!formReady || pending.validate">
+        <button type ="submit" @click.prevent="rejectPointage()" class="btn btn-outline-danger col-2 mx-2" :disabled="!formReady || pending.validate">
             <span v-if="pending.validate">En cours...</span>
             <span v-else>Rejeter</span>
         </button>
     </div>
 
-    <router-view ></router-view>
+    <router-view :personnels_declarations="personnels_declarations" :gta_codages="gta_codages"></router-view>
 </template>
 
 <style lang="scss">
@@ -139,6 +139,17 @@ export default {
             }
 
             return days;
+        },
+
+        /**
+         * Calcule la largeur du navigateur
+         * @return {String}         Taille du navigateur moins les elements de gauche
+         */
+        sizeBar() {
+            let size = window.innerWidth - 402;
+            size = window.innerWidth - 418;
+
+            return 'width:'+ size +'px';
         }
     },
 
@@ -159,15 +170,16 @@ export default {
          * add or remove in array selectedPointages an pointage
          * 
          * @param {Array} payload 
+         * - {Object}   Object du pointage
+         * - {String}   action a faire add ou remomve
          */
         selectedPointage(payload) {
-            console.log(payload);
             if(payload[1] === 'add') {
                 this.selectedPointages.push(payload[0]);
             } else {
                 for(let pointage in this.selectedPointages) {
-                    if(this.selectedPointages[pointage] == payload[0]) {
-                        this.selectedPointages[pointage].splice();
+                    if(this.selectedPointages[pointage].id === payload[0].id) {
+                        this.selectedPointages.splice(this.selectedPointages[pointage], 1);
                     }
                 }
             }
@@ -199,7 +211,6 @@ export default {
                 group_by_personnel: true
             })
             .then( (data) => {
-                console.log(data);
                 this.personnels_declarations = data.personnels;
                 this.gta_codages = data.gta_codages;
 
@@ -240,7 +251,10 @@ export default {
         //             }
         //         });
         //     });
-        // }
+        // },
+
+
+
     },
 
     mounted() {

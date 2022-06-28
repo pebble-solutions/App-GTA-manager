@@ -14,7 +14,7 @@ const routes = [
     component: Validation,
     children: [
       {
-        path:'editpointage/:idPointage?',
+        path:'editpointage/:idStd/',
         name: "EditPointage",
         component: () => import('../components/EditPointage.vue'),
       }

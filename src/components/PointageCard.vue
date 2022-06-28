@@ -1,5 +1,5 @@
 <template>
-    <div class="card border border-2 mb-2 fs-7" :class="{'border border-info border-2 shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click="selectedAction()">
+    <div class="card border border-2 mb-2 fs-7" :class="{'border border-info border-2 shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click.prevent="selectedAction()">
         <div class="card-body text-center d-flex justify-content-between align-items-center">
             <div class="text-secondary">
                 <i class="bi bi-square" v-if="!selected"></i>
@@ -7,7 +7,7 @@
             </div>  
 
             <div>
-                <router-link :to="{name: 'EditPointage'}" custom v-slot="{navigate, href}" v-if="pointage.valider !== 'OUI'">
+                <router-link :to="{name: 'EditPointage', params: {idStd: pointage.id}}" custom v-slot="{navigate, href}" v-if="pointage.valider !== 'OUI'">
                     <a :href="href" @click.stop="navigate" class="text-primary text-decoration-none">
                         <i class="bi bi-pencil-square "></i>
                         Modifier
@@ -30,11 +30,12 @@
             <div class="alert alert-warning border-warning rounded-0 mb-0">
                 <div v-if="pointage.clock_status === 'over'">
                     <div>Durée de travail</div>
-                    <div class="fs-5 fw-bold">{{ddt}}</div>
+                    <div class="fs-5 fw-bold">{{dureetravail}}</div>
                     <div class="fs-8 fst-italic lh-sm" style="">La durée journalière standard est dépassée</div>
                 </div>
 
                 <div v-else>
+                    <div>début {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}</div>
                     <div>En cours...</div>
                 </div>
 
@@ -80,10 +81,10 @@
                 </div>
             </div>
 
-            <div class="fw-bold cursor-pointer" @click.stop="displayMoreInfosReport = !displayMoreInfosReport">
+            <div class="fw-bold cursor-pointer" @click.stop="displayMoreInfosReport = !displayMoreInfosReport" v-if="getGtaDeclarationsNotEmpty.length > 0">
                 <div class="d-flex justify-content-between align-items-start border-top border-secondary">
                     <h3 class="fs-7 fw-bold">
-                        6 infos
+                        {{getGtaDeclarationsNotEmpty.length}} infos
                     </h3>
 
                     <i class="bi" :class="{'bi-chevron-double-up': displayMoreInfosReport, 'bi-chevron-double-down': !displayMoreInfosReport}"></i>  
@@ -96,19 +97,6 @@
                                 <span class="text-start text-truncate" :title="getCodageNom(declaration.gta__codage_id)">{{getCodageNom(declaration.gta__codage_id)}}</span>
                                 <span>{{declaration.qte}}</span>
                         </li>
-
-                        <!-- <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2">
-                            <span class="text-start">Repas</span>
-                            <span>1</span>
-                        </li>
-                        <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2">
-                            <span class="text-start">Pause</span>
-                            <span>1</span>
-                        </li>
-                        <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2">
-                            <span class="text-start">Prime</span>
-                            <span>1</span>
-                        </li> -->
                     </ul>
             </transition>
         </div>
@@ -182,7 +170,7 @@ export default {
         /**
          * Calcule la durée de travail entre la date de début et la date de fin 
          */
-        ddt() {
+        dureetravail() {
             if(!this.pause || this.pause === "00:00") {
                 return this.amplitude;
             }
@@ -193,7 +181,6 @@ export default {
 
         getGtaDeclarationsNotEmpty() {
             let notEmpty = this.gta_declarations.filter((e) => e.qte > 0);
-            console.log('not empty',notEmpty);
             return notEmpty
         },
     },
@@ -210,7 +197,7 @@ export default {
                 options.push('remove');
             }
 
-            this.$emit('selected-pointage', options);
+            this.$emit('select-pointage', options);
         },
 
         /**
@@ -245,12 +232,12 @@ export default {
     },
 
     mounted() {
-        console.log('********************************************************************');
-        console.log(this.pointage);
-        console.log('--------------');
-        console.log(this.gta_codages);
-        console.log('--------------');
-        console.log(this.gta_declarations);
+        // console.log('********************************************************************');
+        //console.log(this.pointage);
+        // console.log('--------------');
+        // console.log(this.gta_codages);
+        // console.log('--------------');
+        // console.log(this.gta_declarations);
     }
 }
 </script>
