@@ -10,7 +10,7 @@
 
 		<template v-slot:header>
 			<div class="mx-2" v-if="selectedWeek">
-				Semaine {{$route.params.id}} : <DateInterval :dd="selectedWeek.dd" :df="selectedWeek.df"></DateInterval>
+				Semaine {{getWeekNumber(new Date(selectedWeek.dd))}} : <DateInterval :dd="selectedWeek.dd" :df="selectedWeek.df"></DateInterval>
 			</div>
 		</template>
 
