@@ -64,7 +64,15 @@
 
                     <td class="col-day" v-for="day in weekDays" :key="'personnel-'+personnel.id+'-'+day.getDate()">
                         <template v-for="periode in getPeriodesFromDate(personnel.gta_periodes, day)">
-                            <PointageCard @selected-pointage="selectedPointage()" v-for="std in periode.structure_temps_declarations" :key="'declaration-'+periode.id+'-'+std.id"></PointageCard>
+                            <PointageCard 
+                                @selected-pointage="selectedPointage()"
+
+                                :pointage="std" 
+                                :gta_declarations="periode.gta_declarations"
+                                :gta_codages="gta_codages"
+                                
+                                v-for="std in periode.structure_temps_declarations" 
+                                :key="'declaration-'+periode.id+'-'+std.id"></PointageCard>
                         </template>
                     </td>
 

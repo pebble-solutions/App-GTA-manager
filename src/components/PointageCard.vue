@@ -7,14 +7,14 @@
             </div>  
 
             <div>
-                <router-link :to="{name: 'EditPointage'}" custom v-slot="{navigate, href}">
+                <router-link :to="{name: 'EditPointage'}" custom v-slot="{navigate, href}" v-if="pointage.valider !== 'OUI'">
                     <a :href="href" @click.stop="navigate" class="text-primary text-decoration-none">
                         <i class="bi bi-pencil-square "></i>
                         Modifier
                     </a>
                 </router-link>
                 
-                <div class="text-success">
+                <div class="text-success" v-else>
                     <i class="bi bi-lock-fill"></i>
                     Validé
                 </div>
@@ -28,24 +28,36 @@
         
         <div class="text-center">
             <div class="alert alert-warning border-warning rounded-0 mb-0">
-                <div>
+                <div v-if="pointage.clock_status === 'over'">
                     <div>Durée de travail</div>
-                    <div class="fs-5 fw-bold">7h</div>
+                    <div class="fs-5 fw-bold">{{ddt}}</div>
                     <div class="fs-8 fst-italic lh-sm" style="">La durée journalière standard est dépassée</div>
+                </div>
+
+                <div v-else>
+                    <div>En cours...</div>
                 </div>
 
                 <transition name="slide">
                     <div v-if="displayMoreInfosTiming">
-                        <div class="border-top border-bottom border-warning py-2 my-2">
+                        <div class="border-top border-bottom border-warning py-2 my-2" v-if="pointage.dpd && pointage.dpd !== '0000-00-00 00:00:00'">
                             <div>Pause</div>
-                            <div class="fs-5 fw-bold">1h00</div>
-                            <div>12h<i class="bi bi-chevron-right"></i>13h</div>
+                            <div class="fs-5 fw-bold">{{pause}}</div>
+                            <div>
+                                {{new Date(pointage.dpd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                <i class="bi bi-chevron-right"></i>
+                                {{new Date(pointage.dfp).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                            </div>
                         </div>
 
-                        <div>
+                        <div :class="{'border-top border-warning pt-2 mt-2': !pointage.dpd || pointage.dpd !== '0000-00-00 00:00:00'}">
                             <div>Amplitude</div>
-                            <div class="fs-5 fw-bold">12h00</div>
-                            <div>8h<i class="bi bi-chevron-right"></i>20h</div>
+                            <div class="fs-5 fw-bold">{{amplitude}}</div>
+                            <div>
+                                {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                <i class="bi bi-chevron-right"></i>
+                                {{new Date(pointage.df).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                            </div>
                             <div class="fs-8 fst-italic lh-sm">L'Amplitude journalière maximum est dépassée</div>
                         </div>
                     </div>
@@ -80,7 +92,12 @@
 
             <transition name="slide">
                     <ul class="px-0" v-if="displayMoreInfosReport">
-                        <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2">
+                        <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2" v-for="declaration in getGtaDeclarationsNotEmpty" :key="'declaration-'+declaration.id">
+                                <span class="text-start text-truncate" :title="getCodageNom(declaration.gta__codage_id)">{{getCodageNom(declaration.gta__codage_id)}}</span>
+                                <span>{{declaration.qte}}</span>
+                        </li>
+
+                        <!-- <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2">
                             <span class="text-start">Repas</span>
                             <span>1</span>
                         </li>
@@ -91,7 +108,7 @@
                         <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2">
                             <span class="text-start">Prime</span>
                             <span>1</span>
-                        </li>
+                        </li> -->
                     </ul>
             </transition>
         </div>
@@ -128,9 +145,12 @@
 
 <script>
 
+
 export default {
     props: {
-        pointage: Object
+        pointage: Object,
+        gta_codages: Object,
+        gta_declarations: Object
     },
 
     data() {
@@ -138,8 +158,44 @@ export default {
             displayMoreInfosTiming : false,
             displayMoreInfosReport : false,
             selected: false,
-            validate: false
+            validate: false,
+            gta_declarationsNotEmpty: []
         }
+    },
+
+    computed: {
+        /**
+         * Calcule l'amplitude entre la date de début et la date de fin 
+         */
+        amplitude() {
+            return this.calculateDiffDate(this.pointage.dd, this.pointage.df);
+        },
+
+        /**
+         * Calcule la pause entre la date de début et la date de fin 
+         */
+        pause() {
+            return this.calculateDiffDate(this.pointage.dpd, this.pointage.dfp);
+        },
+
+
+        /**
+         * Calcule la durée de travail entre la date de début et la date de fin 
+         */
+        ddt() {
+            if(!this.pause || this.pause === "00:00") {
+                return this.amplitude;
+            }
+
+            return this.calculateDiffDate(this.amplitude, this.pause);
+        },
+
+
+        getGtaDeclarationsNotEmpty() {
+            let notEmpty = this.gta_declarations.filter((e) => e.qte > 0);
+            console.log('not empty',notEmpty);
+            return notEmpty
+        },
     },
 
     methods: {
@@ -148,20 +204,53 @@ export default {
 
             let options = [this.pointage];
 
-            console.log(this.pointage);
-
             if(this.selected) {
                 options.push('add');
             } else {
                 options.push('remove');
             }
 
-            console.log('OPTIONS §§§§§ ', options);
+            this.$emit('selected-pointage', options);
+        },
 
-            this.$emit('selected-pointage', options)
+        /**
+         * Calcule une durée entre 2 date
+         * @param {String} sd       
+         * @param {String} sf 
+         * 
+         * @return {String}         format hours : minutes
+         */
+        calculateDiffDate(sd, sf) {
+            let dd = new Date(sd);
+            let df = new Date(sf);
+
+            let diff = Math.abs(dd - df);
+
+            let minutes = Math.floor((diff / (1000 * 60)) % 60),
+                hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+
+            hours = (hours < 10) ? "0" + hours : hours;
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+
+            return hours + ":" + minutes; 
+        },
 
 
+
+        getCodageNom(id) {
+            let gtaCodage = this.gta_codages.find((e) => e.id === id);
+
+            return gtaCodage.nom;
         }
     },
+
+    mounted() {
+        console.log('********************************************************************');
+        console.log(this.pointage);
+        console.log('--------------');
+        console.log(this.gta_codages);
+        console.log('--------------');
+        console.log(this.gta_declarations);
+    }
 }
 </script>
