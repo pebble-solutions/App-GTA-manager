@@ -64,12 +64,12 @@
     </div>
 
     <div v-if="selectedPointages.length > 0" class="p-3 fixed-bottom bg-light shadow border-top ms-auto text-center" :style="sizeBar">
-        <button type="submit" @click.prevent="validatePointage()" class="btn btn-primary col-2 mx-2" :disabled="!formReady || pending.validate">
+        <button type="submit" @click.prevent="validatePointage()" class="btn btn-primary col-2 mx-2" :disabled="pending.validate">
             <span v-if="pending.validate">En cours...</span>
             <span v-else>Valider</span>
         </button>
 
-        <button type ="submit" @click.prevent="rejectPointage()" class="btn btn-outline-danger col-2 mx-2" :disabled="!formReady || pending.validate">
+        <button type ="submit" @click.prevent="rejectPointage()" class="btn btn-outline-danger col-2 mx-2" :disabled="pending.validate">
             <span v-if="pending.validate">En cours...</span>
             <span v-else>Rejeter</span>
         </button>
@@ -177,12 +177,12 @@ export default {
             if(payload[1] === 'add') {
                 this.selectedPointages.push(payload[0]);
             } else {
-                for(let pointage in this.selectedPointages) {
-                    if(this.selectedPointages[pointage].id === payload[0].id) {
-                        this.selectedPointages.splice(this.selectedPointages[pointage], 1);
-                    }
-                }
+                let index = this.selectedPointages.indexOf(this.selectedPointages.find((e) => e.id == payload[0].id));
+
+                this.selectedPointages.splice(index,1);
             }
+
+            console.log(this.selectedPointages);
         },
 
         /**

@@ -1,11 +1,12 @@
 <template>
     <div class="card border border-2 mb-2 fs-7" :class="{'border border-info border-2 shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click.prevent="selectedAction()">
-        <div class="card-body text-center d-flex justify-content-between align-items-center">
+        <!--CHANGEMENT A VOIR AVEC KILLIAN POUR REVENIR A L'AFFICAGE D'AVANT, J'AI SUIVI LES ORDRES-->
+        <div class="card-body text-center d-flex justify-content-between align-items-center" v-if="displayMoreInfosTiming">
             <div class="text-secondary">
                 <i class="bi bi-square" v-if="!selected"></i>
                 <i class="bi bi-check2-square square-color" v-else></i>
             </div>  
-
+            
             <div>
                 <router-link :to="{name: 'EditPointage', params: {idStd: pointage.id}}" custom v-slot="{navigate, href}" v-if="pointage.valider !== 'OUI'">
                     <a :href="href" @click.stop="navigate" class="text-primary text-decoration-none">
@@ -27,11 +28,13 @@
         </div>
         
         <div class="text-center">
-            <div class="alert alert-warning border-warning rounded-0 mb-0">
-                <div v-if="pointage.clock_status === 'over'">
-                    <div>Durée de travail</div>
-                    <div class="fs-5 fw-bold">{{dureetravail}}</div>
-                    <div class="fs-8 fst-italic lh-sm" style="">La durée journalière standard est dépassée</div>
+            <div class="alert alert-warning border-warning rounded-0 mb-0" :class="{'py-1': !displayMoreInfosTiming}">
+                <div v-if="pointage.clock_status === 'over'" :class="{'d-flex justify-content-between align-items-center': !displayMoreInfosTiming && getGtaDeclarationsNotEmpty != 0}">
+                    <div v-if="displayMoreInfosTiming">Durée de travail</div>
+                    <div class="fs-5 fw-bold" :class="{'me-2': !displayMoreInfosTiming}">{{dureetravail}}</div>
+                    <div v-if="getGtaDeclarationsNotEmpty.length > 0 && !displayMoreInfosTiming" class="badge bg-secondary">
+                        {{getGtaDeclarationsNotEmpty.length}} Info<span v-if="getGtaDeclarationsNotEmpty.length > 1">s</span>
+                    </div>
                 </div>
 
                 <div v-else>
@@ -51,7 +54,7 @@
                             </div>
                         </div>
 
-                        <div :class="{'border-top border-warning pt-2 mt-2': !pointage.dpd || pointage.dpd !== '0000-00-00 00:00:00'}">
+                        <div class="border-top border-warning pt-2 mt-2" v-if="!pointage.dpd || pointage.dpd !== '0000-00-00 00:00:00'">
                             <div>Amplitude</div>
                             <div class="fs-5 fw-bold">{{amplitude}}</div>
                             <div>
@@ -59,28 +62,26 @@
                                 <i class="bi bi-chevron-right"></i>
                                 {{new Date(pointage.df).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
                             </div>
-                            <div class="fs-8 fst-italic lh-sm">L'Amplitude journalière maximum est dépassée</div>
+                        </div>
+
+                        <div class="border-top border-warning pt-2 mt-2">
+                            <div>
+                                <h3 class="fs-7 fw-bold">Justification</h3>
+
+                                <div class="text-secondary text-center fst-italic">{{pointage.note}}</div>
+                            </div>
                         </div>
                     </div>
                 </transition>
             </div>
 
-            <button type="button" class="btn btn-warning w-100 rounded-0 d-flex justify-content-between align-items-center" @click.stop="displayMoreInfosTiming = !displayMoreInfosTiming">
-                <i class="bi" :class="{'bi-chevron-double-up': displayMoreInfosTiming, 'bi-chevron-double-down': !displayMoreInfosTiming}"></i>                                     
-                <div>détails</div>                                  
-                <i class="bi" :class="{'bi-chevron-double-up': displayMoreInfosTiming, 'bi-chevron-double-down': !displayMoreInfosTiming}"></i>                                     
+            <button type="button" class="btn btn-warning w-100 rounded-0 d-flex justify-content-between align-items-center" @click.stop="displayMoreInfosTiming = !displayMoreInfosTiming">                              
+                <div>Détails</div>
+                <i class="bi" :class="{'bi-caret-up-fill': displayMoreInfosTiming, 'bi-caret-down-fill': !displayMoreInfosTiming}"></i>                                 
             </button>
         </div>
 
-        <div class="card-body">
-            <div class="mb-2">
-                <div class="text-start border-top border-secondary">
-                    <h3 class="fs-7 fw-bold">Justification</h3>
-
-                    <div class="text-secondary text-center fst-italic">Une justification a donner</div>
-                </div>
-            </div>
-
+        <div class="card-body" v-if="displayMoreInfosTiming">
             <div class="fw-bold cursor-pointer" @click.stop="displayMoreInfosReport = !displayMoreInfosReport" v-if="getGtaDeclarationsNotEmpty.length > 0">
                 <div class="d-flex justify-content-between align-items-start border-top border-secondary">
                     <h3 class="fs-7 fw-bold">
