@@ -22,6 +22,11 @@ export default {
     },
 
     computed: {
+        /**
+         * Calcule la progression de la progressbar
+         * 
+         * @return {Number}     en % ex: 20 pour 20% 
+         */
         progressValue() {
             return (this.semaine.valider*100)/this.semaine.total;
         }

@@ -1,6 +1,5 @@
 <template>
     <div class="card border border-2 mb-2 fs-7" :class="{'border border-info border-2 shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click.prevent="selectedAction()">
-        <!--CHANGEMENT A VOIR AVEC KILLIAN POUR REVENIR A L'AFFICAGE D'AVANT, J'AI SUIVI LES ORDRES-->
         <div class="card-body text-center d-flex justify-content-between align-items-center" v-if="displayMoreInfosTiming">
             <div class="text-secondary">
                 <i class="bi bi-square" v-if="!selected"></i>
@@ -38,7 +37,16 @@
                 </div>
 
                 <div v-else>
-                    <div>début {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}</div>
+                    <div>
+                        début 
+                        <span v-if="pointage.dd_correction && pointage.dd_correction != '0000-00-00 00:00:00'">
+                            {{new Date(pointage.dd_correction).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                        </span>
+
+                        <span v-else>
+                            {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                        </span>
+                    </div>
                     <div>En cours...</div>
                 </div>
 
@@ -48,9 +56,21 @@
                             <div>Pause</div>
                             <div class="fs-5 fw-bold">{{pause}}</div>
                             <div>
-                                {{new Date(pointage.dpd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                <span v-if="pointage.dpd_correction && pointage.dpd_correction != '0000-00-00 00:00:00'">
+                                    {{new Date(pointage.dpd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                </span>
+                                <span v-else>
+                                    {{new Date(pointage.dpd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                </span>
+
                                 <i class="bi bi-chevron-right"></i>
-                                {{new Date(pointage.dfp).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+
+                                <span v-if="pointage.dfp_correction && pointage.dfp_correction != '0000-00-00 00:00:00'">
+                                    {{new Date(pointage.dfp).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                </span>
+                                <span v-else>
+                                    {{new Date(pointage.dfp).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                </span>
                             </div>
                         </div>
 
@@ -58,9 +78,21 @@
                             <div>Amplitude</div>
                             <div class="fs-5 fw-bold">{{amplitude}}</div>
                             <div>
-                                {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                <span v-if="pointage.dd_correction && pointage.dd_correction != '0000-00-00 00:00:00'">
+                                    {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                </span>
+                                <span v-else>
+                                    {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                </span>
+
                                 <i class="bi bi-chevron-right"></i>
-                                {{new Date(pointage.df).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+
+                                <span v-if="pointage.df_correction && pointage.df_correction != '0000-00-00 00:00:00'">
+                                    {{new Date(pointage.df).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                </span>
+                                <span v-else>
+                                    {{new Date(pointage.df).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
+                                </span>
                             </div>
                         </div>
 
@@ -81,26 +113,7 @@
             </button>
         </div>
 
-        <div class="card-body" v-if="displayMoreInfosTiming">
-            <div class="fw-bold cursor-pointer" @click.stop="displayMoreInfosReport = !displayMoreInfosReport" v-if="getGtaDeclarationsNotEmpty.length > 0">
-                <div class="d-flex justify-content-between align-items-start border-top border-secondary">
-                    <h3 class="fs-7 fw-bold">
-                        {{getGtaDeclarationsNotEmpty.length}} infos
-                    </h3>
-
-                    <i class="bi" :class="{'bi-chevron-double-up': displayMoreInfosReport, 'bi-chevron-double-down': !displayMoreInfosReport}"></i>  
-                </div>
-            </div>
-
-            <transition name="slide">
-                    <ul class="px-0" v-if="displayMoreInfosReport">
-                        <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2" v-for="declaration in getGtaDeclarationsNotEmpty" :key="'declaration-'+declaration.id">
-                                <span class="text-start text-truncate" :title="getCodageNom(declaration.gta__codage_id)">{{getCodageNom(declaration.gta__codage_id)}}</span>
-                                <span>{{declaration.qte}}</span>
-                        </li>
-                    </ul>
-            </transition>
-        </div>
+        <GtaDeclarationsList v-if="displayMoreInfosTiming" :gta_declarations="gta_declarations" :gta_codages="gta_codages"></GtaDeclarationsList>
     </div>
 
 </template>
@@ -134,6 +147,7 @@
 
 <script>
 
+import GtaDeclarationsList from '@/components/GtaDeclarationsList.vue';
 
 export default {
     props: {
@@ -145,16 +159,20 @@ export default {
     data() {
         return {
             displayMoreInfosTiming : false,
-            displayMoreInfosReport : false,
             selected: false,
             validate: false,
-            gta_declarationsNotEmpty: []
         }
+    },
+
+    components: {
+        GtaDeclarationsList
     },
 
     computed: {
         /**
          * Calcule l'amplitude entre la date de début et la date de fin 
+         * 
+         * @return {Number}
          */
         amplitude() {
             return this.calculateDiffDate(this.pointage.dd, this.pointage.df);
@@ -162,14 +180,17 @@ export default {
 
         /**
          * Calcule la pause entre la date de début et la date de fin 
+         * 
+         * @return {Number}
          */
         pause() {
             return this.calculateDiffDate(this.pointage.dpd, this.pointage.dfp);
         },
 
-
         /**
          * Calcule la durée de travail entre la date de début et la date de fin 
+         * 
+         * @return {Number}
          */
         dureetravail() {
             if(!this.pause || this.pause === "00:00") {
@@ -179,7 +200,11 @@ export default {
             return this.calculateDiffDate(this.amplitude, this.pause);
         },
 
-
+        /**
+         * Récupère la liste des GtaDéclaration qui on une valeur superieure a 0
+         * 
+         * @return {Object}
+         */
         getGtaDeclarationsNotEmpty() {
             let notEmpty = this.gta_declarations.filter((e) => e.qte > 0);
             return notEmpty
@@ -187,6 +212,10 @@ export default {
     },
 
     methods: {
+        /**
+         * Récupere l'action defini (add ou remove) par levent et renvoi un Array au composant parent
+         * avec en premier params, l'OBJECT pointage et en second l'action qui a été effectuée.
+         */
         selectedAction() {
             this.selected = !this.selected;
 
@@ -222,23 +251,6 @@ export default {
 
             return hours + ":" + minutes; 
         },
-
-
-
-        getCodageNom(id) {
-            let gtaCodage = this.gta_codages.find((e) => e.id === id);
-
-            return gtaCodage.nom;
-        }
-    },
-
-    mounted() {
-        // console.log('********************************************************************');
-        //console.log(this.pointage);
-        // console.log('--------------');
-        // console.log(this.gta_codages);
-        // console.log('--------------');
-        // console.log(this.gta_declarations);
     }
 }
 </script>

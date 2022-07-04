@@ -44,16 +44,35 @@
                     <td></td>
 
                     <td class="col-day" v-for="day in weekDays" :key="'personnel-'+personnel.id+'-'+day.getDate()">
-                        <template v-for="periode in getPeriodesFromDate(personnel.gta_periodes, day)">
-                            <PointageCard 
-                                @select-pointage="selectedPointage"
+                        <template v-for="periode in getPeriodesFromDate(personnel.gta_periodes, day)" :key="'periode-'+periode.id">
+                            <template v-if="periode.structure_temps_declarations.length > 0">
+                                <PointageCard 
+                                    @select-pointage="selectedPointage"
+    
+                                    :pointage="std" 
+                                    :gta_declarations="periode.gta_declarations"
+                                    :gta_codages="gta_codages"
+                                    
+                                    v-for="std in periode.structure_temps_declarations" 
+                                    :key="'declaration-'+periode.id+'-'+std.id"></PointageCard>
+                            </template>
 
-                                :pointage="std" 
-                                :gta_declarations="periode.gta_declarations"
-                                :gta_codages="gta_codages"
-                                
-                                v-for="std in periode.structure_temps_declarations" 
-                                :key="'declaration-'+periode.id+'-'+std.id"></PointageCard>
+                            <template v-else-if="periode.gta_declarations.length > 0 && periode.structure_temps_declarations.length == 0">
+                                <GtaDeclarationsList :gta_declarations="periode.gta_declarations" :gta_codages="gta_codages" :card="true"></GtaDeclarationsList>
+                            </template>
+
+                            <template v-else>
+                                <div class="card border border-2">
+                                    <div class="card-body text-center">
+                                        Periode Vide
+
+                                        <button class="btn btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                            Supprimer
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
                         </template>
                     </td>
 
@@ -100,7 +119,8 @@
 <script>
 import PointageCard from '@/components/PointageCard.vue';
 import UserImage from '@/components/pebble-ui/UserImage.vue';
-import Spinner from '../components/pebble-ui/Spinner.vue';
+import Spinner from '@/components/pebble-ui/Spinner.vue';
+import GtaDeclarationsList from '@/components/GtaDeclarationsList.vue';
 
 export default {
     inheritAttrs: false,
@@ -160,10 +180,11 @@ export default {
     },
 
     components: {
-        PointageCard,
-        UserImage,
-        Spinner
-    },
+    PointageCard,
+    UserImage,
+    Spinner,
+    GtaDeclarationsList
+},
 
     methods: {
         /**

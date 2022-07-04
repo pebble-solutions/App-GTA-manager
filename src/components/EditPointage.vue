@@ -102,7 +102,7 @@
             <div v-if="error.addInfos">ERROR ADD INFOS</div>
             <div v-show="addInfos" class="py-2" >
                 <div class="input-group" >
-                    <select class="form-select" id="inputGroupSelect04" v-model="infosToAdd.gta__codages_id" aria-label="Example select with button addon">
+                    <select class="form-select" id="inputGroupSelect04" v-model="infosToAdd.gta__codage_id" aria-label="Example select with button addon">
                         <option class="text-truncate" v-for="gta_codage in gta_codages" :key="'gtacodage-'+gta_codage.id" :value="gta_codage.id">
                             {{gta_codage.nom}}
                         </option>
@@ -266,7 +266,7 @@ export default {
         },
 
         getCodageNom(id) {
-            console.log('iddddddd',id);
+            //console.log('iddddddd',id);
             let gtaCodage = this.gta_codages.find((e) => e.id === id);
 
             return gtaCodage.nom;
@@ -287,20 +287,17 @@ export default {
         },
 
         actionAddInfos() {
-            if(!this.infosToAdd.gta__codages_id || !this.infosToAdd.qte) {
+            if(!this.infosToAdd.gta__codage_id || !this.infosToAdd.qte) {
                 this.error.addInfos = true;
             } else {
-                console.log('before',this.tmpStd.gta_declarations);
-                console.log(this.infosToAdd);
                 let key= Object.keys(this.tmpStd.gta_declarations).length;
                 let copyobj = Object.assign({}, this.infosToAdd);
-                console.log(key);
+                
+                /**try to put it in float */
+                copyobj.qte.toFixed(2);
+                copyobj['qte'].toFixed(2);
+
                 this.tmpStd.gta_declarations[key] = copyobj;
-                console.log('afterrrr',this.tmpStd.gta_declarations);
-
-
-                //this.tmpStd.gta_declarations.push(this.infosToAdd);
-                //this.tmpStd.gta_declarations = this.infosToAdd;
                 
                 this.infosToAdd.nom = null;
                 this.infosToAdd.qte = null;
