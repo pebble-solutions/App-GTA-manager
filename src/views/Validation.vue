@@ -18,27 +18,32 @@
                 </tr>
             </thead>
 
-            <tbody v-for="personnel in personnels_declarations" :key="'personnel-'+personnel.id" class="table-group-divider"> <!-- composant du personnel -->
-                <tr class="text-center">
-                    <td rowspan="6" class="text-center">
+            <PersonnelItem v-for="personnel in personnels_declarations" :key="'personnel-'+personnel.id"
+                :personnel="personnel"
+                :weekDays="weekDays"
+                :gta_codages="gta_codages"
+            ></PersonnelItem>
+
+            <!-- <tbody v-for="personnel in personnels_declarations" :key="'personnel-'+personnel.id" class="table-group-divider"> 
+                <tr class="text-center" v-for="(resume, key) in getSummary(personnel)" :key="'resumme-'+key">
+                    <td :rowspan="rowspan[personnel.id]" class="text-center" v-if="key == 0">
                         <UserImage :name="personnel.cache_nom" size="user-image-lg" class-name="my-1"></UserImage>
                         <div>{{personnel.cache_nom}}</div>
                     </td>
 
                     <td class="text-start">
-                        Total heures
+                        <span v-if="frSummary[resume]">{{frSummary[resume]}}</span>
+                        <span v-else>{{resume}}</span>
                     </td>
 
-                    <td v-for="day in week" :key="'th-'+day"></td>
+                    <td v-for="day in weekDays" :key="'th-'+day">
+                        {{valueSummaryDay(personnel.counters.days_summary, day, resume)}}
+                    </td>
+
+                    <td>
+                        {{valueSummaryWeek(personnel.counters.weeks_summary[yearWeek], resume)}}
+                    </td>
                 </tr>
-
-                <!-- À guillaume : en chantier -->
-                <!-- <tr v-for="compteur in getCompteurs(personnel)" :key="'personnel-compteur-'+personnel.id+'-'+compteur.key">
-                    <td class="text-start">{{compteur.label}}</td>
-                    <td v-for="day in weekDays" :key="'personnel-compteur-'+personnel.id+'-'+compteur.key+'-'+day.getDate()">
-                        {{compteur.values[day.getDate()]}}
-                    </td>
-                </tr> -->
 
                 <tr v-if="personnels_declarations">
                     <td></td>
@@ -78,7 +83,7 @@
 
                     <td class="col-day"></td>
                 </tr>
-            </tbody>
+            </tbody> -->
         </table>
     </div>
 
@@ -121,6 +126,7 @@ import PointageCard from '@/components/PointageCard.vue';
 import UserImage from '@/components/pebble-ui/UserImage.vue';
 import Spinner from '@/components/pebble-ui/Spinner.vue';
 import GtaDeclarationsList from '@/components/GtaDeclarationsList.vue';
+import PersonnelItem from '../components/personnelItem.vue';
 
 export default {
     inheritAttrs: false,
@@ -138,7 +144,18 @@ export default {
             resumePointageOptions: ['Total heures', 'Heures normales', 'Heures nuit', 'Prime A', 'Alerts'],
             pending: {
                 week: true
-            }
+            },
+            summary: [],
+            frSummary: {
+                'working_time': 'Durée de travail',
+                'break_time': 'Pause',
+                'normal_hours': 'Heures normal',
+                'night_hours': 'Heures de nuit',
+                'holiday_hours': 'Jours férié',
+                'sunday_hours': 'Heures du dimanche'
+            },
+            rowspan:[]
+
         }
     },
 
@@ -170,6 +187,14 @@ export default {
             size = window.innerWidth - 418;
 
             return 'width:'+ size +'px';
+        },
+
+        yearWeek() {
+            let week = this.semaine.week;
+            let splitDate = this.semaine.dd.split('-');
+            let year = splitDate[0];
+
+            return `${year}${week}`;
         }
     },
 
@@ -183,7 +208,8 @@ export default {
     PointageCard,
     UserImage,
     Spinner,
-    GtaDeclarationsList
+    GtaDeclarationsList,
+    PersonnelItem
 },
 
     methods: {
@@ -202,8 +228,6 @@ export default {
 
                 this.selectedPointages.splice(index,1);
             }
-
-            console.log(this.selectedPointages);
         },
 
         /**
@@ -253,29 +277,99 @@ export default {
             return periodes.filter(e => e.period_year == date.getFullYear() && e.period_month == (date.getMonth()+1) && e.period_day == date.getDate());
         },
 
-        // À guillaume : en chantier
-        // getCompteurs(personnel) {
-        //     let compteurs = {};
+        /**
+         * Renvoi un tableau summary avec juste les informations qui nous interesse et non null
+         * 1- ajout dans un nouveau trableau juste les element qui nous interesse
+         * 2- Si index = Gta_declaration alors on boucle sur le resultat pour recuperer l'id qu'on map avec l'id de gta_codages pour récup le nom.
+         * @param {Object} total_summary 
+         * 
+         * @return {Array} merge
+         */
+        getSummary(personnel) {
+            let total_summary = personnel.counters.total_summary;
+            let personnelId = personnel.id;
+            let summary = [];
+            let declarations = [];
 
-        //     personnel.gta_periodes.forEach(gta_periode => {
-        //         gta_periode.structure_temps_declarations.forEach(std => {
-        //             let dd = new Date(std.dd_correction ? std.dd_correction : std.dd);
-        //             let df = new Date(std.df_correction ? std.df_correction : std.df);
+            for( const index in total_summary) {
+                if(index !== "declarations" && index!== 'amplitude' && index !== 'gta_declarations' && index != 'hours_per_day') {
+                    if(total_summary[index]) {
+                        summary.push(index);
+                    }
+                }
 
-        //             let ddp = new Date(std.ddp_correction ? std.ddp_correction : std.ddp);
-        //             let dfp = new Date(std.dfp_correction ? std.dfp_correction : std.dfp);
+                if(index == 'gta_declarations') {
+                    if(total_summary[index]) {
+                        for(const codageId in total_summary[index]) {
+                            if(total_summary[index][codageId]) {
+                                let codage = this.gta_codages.find(e => e.id == codageId);
+        
+                                declarations.push(codage.nom);
+                            }
+                        }
+                    }
+                }
+            }
 
-        //             let hours = Math.abs(dd - df) / 36e5 - Math.abs(ddp - dfp) / 36e5;
+            let merge = summary.concat(declarations);
 
-        //             if (!compteurs.normal) {
-        //                 compteurs.normal = {};
-        //             }
-        //         });
-        //     });
-        // },
+            this.rowspan[personnelId] = merge.length+1;
 
+            return merge;
+        },
 
+        /**
+         * Renvoi les valeurs summary calculé sur un weekend
+         * @param {Object} summaryWeek 
+         * @param {String} summerKey
+         * 
+         * @return {Number}
+         */
+        valueSummaryWeek(summaryWeek, summaryKey) {
+            let codage = this.gta_codages.find(e => e.nom == summaryKey);
 
+            if(codage) {
+                return this.twoDigitAfterComma(summaryWeek.gta_declarations[codage.id]);
+            } 
+
+            return this.twoDigitAfterComma(summaryWeek[summaryKey]);
+            
+        },
+
+        /**
+         * Renvoi les valeurs summary calculé sur un jour
+         * @param {Object} summaryDay 
+         * @param {Date} day 
+         * @param {String} summaryKey
+         * 
+         * @return {Number}
+         */
+        valueSummaryDay(summaryDay, day, summaryKey) {
+            let apiDate = `${day.getFullYear()}${Intl.DateTimeFormat('fr-FR',{month:'2-digit'}).format(day)}${Intl.DateTimeFormat('fr-FR',{day:'2-digit'}).format(day)}`;
+
+            if(summaryDay[apiDate]) {
+                let codage = this.gta_codages.find(e => e.nom == summaryKey);
+
+                if(codage) {
+                    return this.twoDigitAfterComma(summaryDay[apiDate]['gta_declarations'][codage.id]);
+                }
+                if(summaryDay[apiDate][summaryKey]) {
+                    return this.twoDigitAfterComma(summaryDay[apiDate][summaryKey]); 
+                }
+            }
+
+            return;
+        },
+
+        /**
+         * Retourn le chiffre a 2 chiffre apres la virgule ex: 5.62
+         * @param {Number} number
+         * 
+         * @return {Number}
+         */
+        twoDigitAfterComma(number) {
+            return Math.round(number * 100) / 100;
+        }
     },
 
     mounted() {

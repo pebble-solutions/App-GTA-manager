@@ -1,12 +1,12 @@
 <template>
     <div class="card border border-2 mb-2 fs-7" :class="{'border border-info border-2 shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click.prevent="selectedAction()">
         <div class="card-body text-center d-flex justify-content-between align-items-center" v-if="displayMoreInfosTiming">
-            <div class="text-secondary">
+            <div class="text-secondary" v-if="pointage.clock_status === 'over'">
                 <i class="bi bi-square" v-if="!selected"></i>
                 <i class="bi bi-check2-square square-color" v-else></i>
             </div>  
             
-            <div>
+            <div class="ms-auto">
                 <router-link :to="{name: 'EditPointage', params: {idStd: pointage.id}}" custom v-slot="{navigate, href}" v-if="pointage.valider !== 'OUI'">
                     <a :href="href" @click.stop="navigate" class="text-primary text-decoration-none">
                         <i class="bi bi-pencil-square "></i>
@@ -28,11 +28,17 @@
         
         <div class="text-center">
             <div class="alert alert-warning border-warning rounded-0 mb-0" :class="{'py-1': !displayMoreInfosTiming}">
-                <div v-if="pointage.clock_status === 'over'" :class="{'d-flex justify-content-between align-items-center': !displayMoreInfosTiming && getGtaDeclarationsNotEmpty != 0}">
+                <div v-if="pointage.clock_status === 'over'" :class="{'d-flex justify-content-between align-items-center': !displayMoreInfosTiming && getGtaDeclarationsNotEmpty != 0, 'd-flex justify-content-start align-items-center': getGtaDeclarationsNotEmpty == 0}">
+                    <div class="text-secondary" :class="{'me-2' : getGtaDeclarationsNotEmpty == 0}" v-if="!displayMoreInfosTiming">
+                        <i class="bi bi-square" v-if="!selected"></i>
+                        <i class="bi bi-check2-square square-color" v-else></i>
+                    </div>  
+                    
                     <div v-if="displayMoreInfosTiming">Durée de travail</div>
-                    <div class="fs-5 fw-bold" :class="{'me-2': !displayMoreInfosTiming}">{{dureetravail}}</div>
+                    <div class="fs-5 fw-bold">{{dureetravail}}</div>
+
                     <div v-if="getGtaDeclarationsNotEmpty.length > 0 && !displayMoreInfosTiming" class="badge bg-secondary">
-                        {{getGtaDeclarationsNotEmpty.length}} Info<span v-if="getGtaDeclarationsNotEmpty.length > 1">s</span>
+                        {{getGtaDeclarationsNotEmpty.length}}
                     </div>
                 </div>
 
@@ -217,6 +223,10 @@ export default {
          * avec en premier params, l'OBJECT pointage et en second l'action qui a été effectuée.
          */
         selectedAction() {
+            if(this.pointage.clock_status !== 'over') {
+                return;
+            } 
+            
             this.selected = !this.selected;
 
             let options = [this.pointage];

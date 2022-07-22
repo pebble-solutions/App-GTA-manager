@@ -266,7 +266,6 @@ export default {
         },
 
         getCodageNom(id) {
-            //console.log('iddddddd',id);
             let gtaCodage = this.gta_codages.find((e) => e.id === id);
 
             return gtaCodage.nom;
