@@ -24,6 +24,7 @@
                 :gta_codages="gta_codages"
             ></PersonnelItem>
 
+            <!-- A GARDER JSUQUAU FONCTIONNEMENT DES COMPOSENT -->
             <!-- <tbody v-for="personnel in personnels_declarations" :key="'personnel-'+personnel.id" class="table-group-divider"> 
                 <tr class="text-center" v-for="(resume, key) in getSummary(personnel)" :key="'resumme-'+key">
                     <td :rowspan="rowspan[personnel.id]" class="text-center" v-if="key == 0">
