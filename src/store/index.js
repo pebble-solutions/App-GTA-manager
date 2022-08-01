@@ -7,7 +7,8 @@ export default createStore({
 		login: null,
 		elements: [],
 		openedElement: null,
-		tmpElement: null
+		tmpElement: null,
+		pointageSelected: []
 	},
 	getters: {
 		activeStructure(state) {
@@ -126,6 +127,28 @@ export default createStore({
 		 */
 		setStructureId(state, structureId) {
 			state.activeStructureId = structureId;
+		},
+
+		/**
+		 * Ajout ou retire un pointage du tableau  pointageSelected
+		 * @param {Object} state le state de l'instance vuex
+		 * @param {Object} optionsPointage 
+		 * 		- pointage {Object}		le pointage selectionné
+		 * 		- action {String}		l'action a faire sur le tableau, ajouter/retirer/reset
+		 */
+		pointage_selected(state, optionsPointage) {
+			if(optionsPointage.action == 'add') {
+				state.pointageSelected.push(optionsPointage.pointage);
+			} else if (optionsPointage == 'remove') {
+				let index = state.pointageSelected.findIndex(p => p.id === optionsPointage.pointage.id);
+
+				if(index !== -1) {
+					state.pointageSelected.splice(index, 1);
+				}
+			} else {
+				console.log('reset');
+				state.pointageSelected = [];
+			}
 		}
 	},
 	actions: {
@@ -218,7 +241,35 @@ export default createStore({
 			context.commit('tmpElement', null);
 			context.commit('replaceElements', []);
 			context.commit('setStructureId', payload);
+		},
+
+		/**
+		 * Ajout un pointage a la liste des pointages sélectionnés
+		 * @param {Object} context Instance vuex
+		 * @param {Object} pointage pointage a ajouter
+		 */
+		addPointage(context, pointage) {
+			context.commit('pointage_selected', {pointage, action : 'add'});
+		},
+
+		/**
+		 * Remove un pointage a la liste des pointages sélectionnés
+		 * @param {Object} context Instance vRemove	 
+		 * @param {Object} pointage pointage a ajouter
+		 */
+		removePointage(context, pointage) {
+			context.commit('pointage_selected', {pointage, action : 'remove'});
+		},
+
+		/**
+		 * Remove un pointage a la liste des pointages sélectionnés
+		 * @param {Object} context Instance vRemove	 
+		 */
+		resetPointage(context) {
+			context.commit('pointage_selected', {action : 'reset'});
 		}
+
+
 	},
 	modules: {
 	}

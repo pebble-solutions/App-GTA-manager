@@ -1,9 +1,6 @@
 <template>
-    <tr class="text-center" > <!--COMPONENT SUMMARY -->
-        <td :rowspan="rowspan[personnel.id]" class="text-center" v-if="key == 'resume-0'">
-            <UserImage :name="personnel.cache_nom" size="user-image-lg" class-name="my-1"></UserImage>
-            <div>{{personnel.cache_nom}}</div>
-        </td>
+    <tr class="text-center" >
+        <PersonnelBadge :personnel="personnel" :rowspan="rowspan" :id="id" v-if="id == 0"> </PersonnelBadge>
 
         <td class="text-start">
             <span v-if="frSummary[resume]">{{frSummary[resume]}}</span>
@@ -21,22 +18,26 @@
 </template>
 
 <script>
-import UserImage from '@/components/pebble-ui/UserImage.vue';
+import PersonnelBadge from './PersonnelBadge.vue';
+
 
 export default {
     props: {
         personnel: Object,
-        key: String,
-        resume: String
+        id: Number,
+        resume: String,
+        weekDays: Array,
+        gta_codages: Object,
+        semaine: Object,
+        rowspan: Number
     },
 
     data() {
         return {
-            rowspan: [],
             frSummary: {
                 'working_time': 'Durée de travail',
                 'break_time': 'Pause',
-                'normal_hours': 'Heures normal',
+                'normal_hours': 'Heures normales',
                 'night_hours': 'Heures de nuit',
                 'holiday_hours': 'Jours férié',
                 'sunday_hours': 'Heures du dimanche'
@@ -44,8 +45,18 @@ export default {
         }
     },
 
+    computed: {
+        yearWeek() {
+            let week = this.semaine.week;
+            let splitDate = this.semaine.dd.split('-'); 
+            let year = splitDate[0];
+
+            return `${year}${week}`;
+        }
+    },
+
     components: {
-        UserImage
+        PersonnelBadge
     },
 
     methods: {
@@ -77,13 +88,15 @@ export default {
          */
         valueSummaryDay(summaryDay, day, summaryKey) {
             let apiDate = `${day.getFullYear()}${Intl.DateTimeFormat('fr-FR',{month:'2-digit'}).format(day)}${Intl.DateTimeFormat('fr-FR',{day:'2-digit'}).format(day)}`;
-
             if(summaryDay[apiDate]) {
                 let codage = this.gta_codages.find(e => e.nom == summaryKey);
 
                 if(codage) {
-                    return this.twoDigitAfterComma(summaryDay[apiDate]['gta_declarations'][codage.id]);
+                    if(summaryDay[apiDate]['gta_declarations'].length != 0) {
+                        return this.twoDigitAfterComma(summaryDay[apiDate]['gta_declarations'][codage.id]);
+                    }
                 }
+
                 if(summaryDay[apiDate][summaryKey]) {
                     return this.twoDigitAfterComma(summaryDay[apiDate][summaryKey]); 
                 }

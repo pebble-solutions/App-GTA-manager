@@ -5,8 +5,7 @@
 		:cfg-menu="cfgMenu"
 		:cfg-slots="cfgSlots"
 		
-		@auth-change="setLocal_user"
-		@structure-change="switchStructure">
+		@auth-change="setLocal_user">
 
 		<template v-slot:header>
 			<div class="mx-2" v-if="selectedWeek">
@@ -22,7 +21,7 @@
 		</template>
 
 		<template v-slot:list>
-			<Spinner v-if="pending.semaines"></Spinner>
+			<Spinner v-if="pending.semaines && isConnectedUser"></Spinner>
 
 			<AppMenu v-if="semaines">
 				<Spinner v-if="pending.moreWeeks"></Spinner>
@@ -87,6 +86,7 @@ import Spinner from '@/components/pebble-ui/Spinner.vue'
 
 import CONFIG from "@/config.json"
 import DateInterval from './components/DateInterval.vue'
+import { mapActions } from 'vuex'
 
 export default {
 
@@ -130,6 +130,8 @@ export default {
 	},	
 
 	methods: {
+		...mapActions(['resetPointage']),
+
 		/**
 		 * Met à jour les informations de l'utilisateur connecté
 		 * @param {Object} user Un objet LocalUser
@@ -152,7 +154,28 @@ export default {
 		 */
 		switchStructure(structureId) {
 			this.$router.push('/');
+
 			this.$store.dispatch('switchStructure', structureId);
+
+			if(structureId) {
+				let today = new Date();
+				let year = today.getFullYear();
+
+				/* Il est nécessaire de développer une fonction pour traiter les changement d'année :
+				 * Actuellement, si la currentWeek est 202201, la currentWeek-5 est 202196 ce qui n'est pas possible.
+				 * Il faut voir au niveau des fonction natives de JavaScript qui peuvent potentiellement
+				 * permettre de faire des calcule de date (ex : +14 jours ou -35 jours)
+				 */
+				let currentWeek = parseInt(`${year}${this.getWeekNumber(today)}`);
+				this.currentWeek = currentWeek;
+				let start = this.currentWeek-5;
+				let end = (this.currentWeek+2);
+
+				this.loadWeeks(start, end)
+				.then(() => {
+					this.$router.push('/week/'+currentWeek);
+				});
+			}
 
 		},
 
@@ -263,29 +286,10 @@ export default {
 	},
 
 	mounted() {
-
 		this.$router.push('/');
-		
-		this.$app.addEventListener('structureChanged', (user) => {
-			if(user) {
-				let today = new Date();
-				let year = today.getFullYear();
 
-				/* Il est nécessaire de développer une fonction pour traiter les changement d'année :
-				 * Actuellement, si la currentWeek est 202201, la currentWeek-5 est 202196 ce qui n'est pas possible.
-				 * Il faut voir au niveau des fonction natives de JavaScript qui peuvent potentiellement
-				 * permettre de faire des calcule de date (ex : +14 jours ou -35 jours)
-				 */
-				this.currentWeek = parseInt(`${year}${this.getWeekNumber(today)}`);
-
-				let start = this.currentWeek-5;
-				let end = (this.currentWeek+2);
-
-				this.loadWeeks(start, end)
-				.then(() => {
-					this.$router.push('/week/'+this.currentWeek);
-				});
-			}
+		this.$app.addEventListener('structureChanged', (structureId) => {
+			this.switchStructure(structureId);
 		});
 
 
