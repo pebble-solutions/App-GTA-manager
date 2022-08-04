@@ -232,7 +232,7 @@ export default {
             let notEmpty;
 
             if(this.gta_declarations) {
-                notEmpty = this.gta_declarations.filter((e) => e.qte > 0);
+                notEmpty = this.gta_declarations.filter((e) => e.correction === "OUI" && e.qte_retenue > 0 || e.correction === null && e.qte > 0 || e.correction === "NON" && e.qte > 0);
             }
 
             return notEmpty

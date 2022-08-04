@@ -87,7 +87,8 @@
                 </button>
             </div>
 
-            <div v-if="error.addInfos">ERROR ADD INFOS</div>
+            <AlertMessage v-if="error.addInfos" variant="danger">Impossible d'ajouter la déclaration</AlertMessage>
+
             <div v-show="addInfos" class="py-2" >
                 <div class="input-group" >
                     <select class="form-select" id="inputGroupSelect04" v-model="infosToAdd.gta__codage_id" aria-label="Example select with button addon">
@@ -96,7 +97,7 @@
                         </option>
                     </select>
 
-                    <input type="number" class="form-control" v-model="infosToAdd.qte">
+                    <input type="number" class="form-control" v-model="infosToAdd.qte_retenue">
 
                     <button type="button" class="btn btn-success" @click.prevent="actionAddInfos()">
                         <i class="bi bi-check"></i>
@@ -105,19 +106,19 @@
             </div>
 
             <div v-for="declaration in tmpStd.gta_declarations" :key="declaration.id">
-                <div class="border-dashed d-flex justify-content-between align-items-center my-2" v-if="declaration.qte != 0.00">
+                <div class="border-dashed d-flex justify-content-between align-items-center my-2" v-if="declaration.correction === null && declaration.qte != 0.00 || declaration.correction === 'OUI' && declaration.qte_retenue != 0.00 && declaration.qte_retenue !== null || declaration.corretion === 'NON' && declaration.qte != 0.00">
                     <label for="qt-row-1 text-truncate" :title="getCodageNom(declaration.gta__codage_id)">{{getCodageNom(declaration.gta__codage_id)}}</label>
 
                     <div class="sizeBoxQte">
                         <div class="input-group input-group-sm ms-auto">
-                            <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="updateQte('add', declaration)">
-                                <i class="bi bi-plus-lg"></i>
-                            </button>
-
-                            <input type="text" class="form-control text-center" :value="declaration.qte" id="qt-row-1" >
-    
                             <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="updateQte('remove', declaration)">
                                 <i class="bi bi-dash-lg"></i>
+                            </button>
+                            
+                            <input type="text" class="form-control text-center" :value="declaration.qte_retenue ? declaration.qte_retenue : declaration.qte" id="qt-row-1" >
+    
+                            <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="updateQte('add', declaration)">
+                                <i class="bi bi-plus-lg"></i>
                             </button>
                         </div>
                     </div>
@@ -144,6 +145,7 @@ import { ref } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import date from 'date-and-time';
+import AlertMessage from './pebble-ui/AlertMessage.vue';
 
 export default {
     props: {
@@ -167,8 +169,8 @@ export default {
             },
             showBreak: false,
             infosToAdd: {
-                gta__codages_id: null,
-                qte: null
+                gta__codage_id: null,
+                qte_retenue: null
             },
             error: {
                 addInfos : null,
@@ -180,15 +182,15 @@ export default {
         std() {
             let stdId = this.$route.params.idStd;
             let std;
-            this.personnels_declarations.find((pd) => {
-                pd.gta_periodes.find((gtap) => {
-                    gtap.structure_temps_declarations.find((s) => {
-                        if(s.id == stdId) {
-                            std = s
-                            return std;
+
+            this.personnels_declarations.forEach(personnel => {
+                personnel.gta_periodes.forEach(periode => {
+                    periode.structure_temps_declarations.forEach(e => {
+                        if(e.id == stdId) {
+                            std = e;
                         }
                     });
-                })
+                });
             });
 
             return std;
@@ -197,6 +199,16 @@ export default {
         gta_declarations() {
             let stdId = this.$route.params.idStd;
             let gta_declarations;
+
+            // this.personnels_declarations.forEach(personnel => {
+            //     personnel.gta_periodes.foreach(periode => {
+            //         periode.structure_temps_declarations.forEach(e => {
+            //             if(e.id == stdId) {
+            //                 gta_declarations = periode.gta_declarations;
+            //             }
+            //         });
+            //     });
+            // });
 
             this.personnels_declarations.find((pd) => {
                 pd.gta_periodes.find((gtap) => {
@@ -216,14 +228,23 @@ export default {
 
     components: {
         AppModal,
-        Datepicker
+        Datepicker,
+        AlertMessage
     },
 
     methods: {
+        /**
+         * Permet de retourner a lurl avant louverture de la modal quand on vient fermer cette modal
+         */
         routeToBack() {
             this.$router.push({name:'Validation'})
         },
 
+        /**
+         * Montre ou cache la partie pour ajouter une pause
+         * 
+         * @return {Boolean}
+         */
         haveBreak() {
             if(this.std.dpd && this.std.dpd !== '0000-00-00 00:00:00') {
                 this.showBreak = true;
@@ -233,7 +254,13 @@ export default {
 
             return false;
         },
-
+        
+        /**
+         * Retourn le nom du gta codages spécifique a son id
+         * @param {integer} id l'id du gta codages recherché
+         * 
+         * @return {String}
+         */
         getCodageNom(id) {
             let gtaCodage = this.gta_codages.find((e) => e.id === id);
 
@@ -248,27 +275,30 @@ export default {
          */
         updateQte(action, declaration) {
             if(action === "add") {
-                declaration.qte++;
+                declaration.qte_retenue ? declaration.qte_retenue++ : declaration.qte++;
             } else {
-                declaration.qte--;
+                declaration.qte_retenue ? declaration.qte_retenue-- : declaration.qte--;
             }
         },
 
+        /**
+         * Ajout une nouvelle declaration a la list des déclarations
+         * et reset l'object this.infosToAdd
+         */
         actionAddInfos() {
-            if(!this.infosToAdd.gta__codage_id || !this.infosToAdd.qte) {
+            if(!this.infosToAdd.gta__codage_id || !this.infosToAdd.qte_retenue) {
                 this.error.addInfos = true;
             } else {
                 let key= Object.keys(this.tmpStd.gta_declarations).length;
                 let copyobj = Object.assign({}, this.infosToAdd);
-                
-                /**try to put it in float */
-                copyobj.qte.toFixed(2);
-                copyobj['qte'].toFixed(2);
 
+                copyobj['correction'] = 'OUI';
+                copyobj['qte'] = copyobj['qte_retenue'];
+                
                 this.tmpStd.gta_declarations[key] = copyobj;
                 
                 this.infosToAdd.nom = null;
-                this.infosToAdd.qte = null;
+                this.infosToAdd.qte_retenue = null;
             }
         },
 
@@ -278,22 +308,28 @@ export default {
          */
         recordEditPointage() {
             let urlApi = 'gtaPeriode/POST/' + this.std.gta__periode_id;
+            
+            console.log('gta declarations', this.tmpStd.gta_declarations);
 
-            console.log('api tmpstd', this.tmpStd);
-            console.log(this.tmpStd.dd_time.minutes);
-            console.log(this.tmpStd.df_time.minutes);
-            console.log('555555555555555555555');
-
-            this.$app.apiGet(urlApi, {
+            this.$app.apiPost(urlApi, {
                 'dd_correction': date.format(this.tmpStd.dd_date, 'YYYY-MM-DD') + ' ' + this.tmpStd.dd_time.hours + ':' + this.tmpStd.dd_time.minutes,
                 'df_correction': date.format(this.tmpStd.df_date, 'YYYY-MM-DD') + ' ' + this.tmpStd.df_time.hours + ':' + this.tmpStd.df_time.minutes,
                 'dpd_correction': this.tmpStd.dpd_date ? date.format(this.tmpStd.dpd_date, 'YYYY-MM-DD') + ' ' + (this.tmpStd.dpd_time.hours < 10 ? "0" : "") + this.tmpStd.dpd_time.hours + ':' + (this.tmpStd.dpd_time.minutes < 10 ? "0" : "") + this.tmpStd.dpd_time.minutes : null,
                 'dfp_correction': this.tmpStd.dfp_date ? date.format(this.tmpStd.dfp_date, 'YYYY-MM-DD') + ' ' + (this.tmpStd.dfp_time.hours < 10 ? "0" : "") + this.tmpStd.dfp_time.hours + ':' + (this.tmpStd.dfp_time.minutes < 10 ? "0" : "") + this.tmpStd.dfp_time.minutes : null,
-                'gta_declration' : JSON.stringify(this.tmpStd.gta_declarations),
+                'gta_declarations' : JSON.stringify(this.tmpStd.gta_declarations),
                 'structure_temps_declaration': this.std.id
             }).then((data) => {
                 console.log('data berfore', this.std);
+                console.log('delcaration before', this.gta_declarations);
                 
+                console.log(this.personnels_declarations);
+                console.log('data', data);
+                console.log('test', data['structure_temps_declaration'])
+                
+                this.$emit('update-std', data['structure_temps_declaration']);
+                this.$emit('update-gta_declarations', data['gta_declarations']);
+
+
                 console.log('return api edit', data);
                 this.$router.push('/week/'+ this.$route.params.id);
             }) .catch(this.$app.catchError);
@@ -350,16 +386,13 @@ export default {
 
 
             let df = this.checkIfCorrection(this.std.df, this.std.df_correction);
-            console.log('df',df);
             this.tmpStd.df_date = ref(df);
             this.tmpStd.df_time = ref({
                 hours: df ? df.getHours() : null,
                 minutes: df ? df.getMinutes() : null
             });
-            console.log('this dpd', this.std.dpd);
-            console.log('this. dpd correction', this.std.dpd_correction);
+
             let dpd = this.checkIfCorrection(this.std.dpd, this.std.dpd_correction);
-            console.log('dpd', dpd);
             this.tmpStd.dpd_date = ref(dpd);
             this.tmpStd.dpd_time = ref({
                 hours: dpd ? dpd.getHours() : null,
@@ -367,14 +400,13 @@ export default {
             });
 
             let dfp = this.checkIfCorrection(this.std.dfp, this.std.dfp_correction);
-            console.log('dfp', dfp);
             this.tmpStd.dfp_date = ref(dfp);
             this.tmpStd.dfp_time = ref({
                 hours: dfp ? dfp.getHours() : null,
                 minutes: dfp ? dfp.getMinutes() : null
             });
 
-            this.tmpStd.gta_declarations = Object.assign({}, this.gta_declarations);
+            this.tmpStd.gta_declarations = JSON.parse(JSON.stringify(this.gta_declarations));
         }
 
 

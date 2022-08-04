@@ -29,7 +29,7 @@
                 <ul class="px-0" v-if="displayMoreInfosReport && getGtaDeclarationsNotEmpty.length > 0">
                     <li class="d-flex justify-content-between align-items-start px-0 pb-0 border-dashed pt-2" v-for="declaration in getGtaDeclarationsNotEmpty" :key="'declaration-'+declaration.id">
                             <span class="text-start text-truncate" :title="getCodageNom(declaration.gta__codage_id)">{{getCodageNom(declaration.gta__codage_id)}}</span>
-                            <span>{{declaration.qte}}</span>
+                            <span>{{declaration.qte_retenue ? declaration.qte_retenue : declaration.qte}}</span>
                     </li>
                 </ul>
             </transition>
@@ -67,7 +67,8 @@ export default {
          * @return {Object}
          */
         getGtaDeclarationsNotEmpty() {
-            let notEmpty = this.gta_declarations.filter((e) => e.qte > 0);
+            let notEmpty = this.gta_declarations.filter((e) => e.correction === "OUI" && e.qte_retenue > 0 || e.correction === null && e.qte > 0 || e.correction === "NON" && e.qte > 0);
+            
             return notEmpty;
         },
     },

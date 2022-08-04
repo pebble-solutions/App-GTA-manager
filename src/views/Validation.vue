@@ -39,7 +39,7 @@
         </button>
     </div>
 
-    <router-view :personnels_declarations="personnels_declarations" :gta_codages="gta_codages"></router-view>
+    <router-view :personnels_declarations="personnels_declarations" :gta_codages="gta_codages" @update-std="updateStds" @update-gta_declarations="UpdateGtaDeclarations"></router-view>
 </template>
 
 <style lang="scss">
@@ -179,11 +179,60 @@ export default {
             .catch(this.$app.catchError);
         },
 
+        /**
+         * Met a jour la liste des pointages selectionnés
+         * @param {Array} selectedPointage liste des pointages selectionnés
+         */
         updateSelectedPointages(selectedPointage) {
             this.selectedPointages = selectedPointage;
         },
+
+        /**
+         * Met a jour la list de structure temps declaration (std)
+         * @param {Array} stds contient un/des object structure temps declaration
+         */
+        updateStds(stds) {
+            stds.forEach(std => {
+                this.personnels_declarations.forEach(personnel => {
+                    personnel.gta_periodes.forEach(periode => {
+                        let storedStd = periode.structure_temps_declarations.find(e => e.id == std.id);
+
+                        if (storedStd) {
+                            for (const key in std) {
+                                storedStd[key] = std[key];
+                            }
+                        }
+                    });
+                });
+            });
+        },
+
+
+        /**
+         * Met a jour la list de gta_declaration 
+         * @param {Array} declarations contient un/des object gta_declaration
+         */
+        UpdateGtaDeclarations(declarations) {
+            declarations.forEach(declaration => {
+                this.personnels_declarations.forEach(personnel => {
+                    personnel.gta_periodes.forEach(periode => {
+                        let storedDeclaration = periode.gta_declarations.find(e => e.id == declaration.id);
+
+                        if(storedDeclaration) {
+                            for (const key in declaration) {
+                                storedDeclaration[key] = declaration[key]
+                            }
+                        }
+                    });
+                });
+            });
+        }
     },
 
+    /**
+     * Met a jour la list de structure temps declaration (std)
+     * @param {Array} stds contient un/des object structure temps declaration
+     */
     mounted() {
         this.loadDeclarations();
         this.resetPointage();
