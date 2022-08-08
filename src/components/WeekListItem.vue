@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import ProgressBar from '@/components/pebble-ui/ProgressBar.vue';
+import ProgressBar from '@/components/pebble-ui/loader/ProgressBar.vue';
 import DateInterval from './DateInterval.vue';
 
 export default {

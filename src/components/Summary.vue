@@ -88,6 +88,7 @@ export default {
          */
         valueSummaryDay(summaryDay, day, summaryKey) {
             let apiDate = `${day.getFullYear()}${Intl.DateTimeFormat('fr-FR',{month:'2-digit'}).format(day)}${Intl.DateTimeFormat('fr-FR',{day:'2-digit'}).format(day)}`;
+
             if(summaryDay[apiDate]) {
                 let codage = this.gta_codages.find(e => e.nom == summaryKey);
 
@@ -112,7 +113,11 @@ export default {
          * @return {Number}
          */
         twoDigitAfterComma(number) {
-            return Math.round(number * 100) / 100;
+            if(number) {
+                return Math.round(number * 100) / 100;
+            }
+
+            return;
         }
     }
 }

@@ -139,7 +139,7 @@ export default createStore({
 		pointage_selected(state, optionsPointage) {
 			if(optionsPointage.action == 'add') {
 				state.pointageSelected.push(optionsPointage.pointage);
-			} else if (optionsPointage == 'remove') {
+			} else if (optionsPointage.action == 'remove') {
 				let index = state.pointageSelected.findIndex(p => p.id === optionsPointage.pointage.id);
 
 				if(index !== -1) {

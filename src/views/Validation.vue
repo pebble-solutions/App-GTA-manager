@@ -4,7 +4,7 @@
         <table class="table table-bordered table-sm fs-7">
             <thead class="align-middle text-center table-secondary">
                 <tr>
-                    <th>Personnel</th>
+                    <th class="col-md-2">Personnel</th>
                     <th></th>
 
                     <th class="col-day" v-for="day in weekDays" :key="'day-header-'+day.getDate()">
@@ -27,17 +27,9 @@
         </table>
     </div>
 
-    <div v-if="pointageSelected.length > 0" class="p-3 fixed-bottom bg-light shadow border-top ms-auto text-center" :style="sizeBar">
-        <button type="submit" @click.prevent="validatePointage()" class="btn btn-primary col-2 mx-2" :disabled="pending.validate">
-            <span v-if="pending.validate">En cours...</span>
-            <span v-else>Valider</span>
-        </button>
-
-        <button type ="submit" @click.prevent="rejectPointage()" class="btn btn-outline-danger col-2 mx-2" :disabled="pending.validate">
-            <span v-if="pending.validate">En cours...</span>
-            <span v-else>Rejeter</span>
-        </button>
-    </div>
+    <FooterToolbar v-if="pointageSelected.length">
+        <ValidationButtons cancelLabel="Refuser" :pending="pending.validation" @confirm="actionForSelection('valider')" @cancel="actionForSelection('refuser')" />
+    </FooterToolbar>
 
     <router-view :personnels_declarations="personnels_declarations" :gta_codages="gta_codages" @update-std="updateStds" @update-gta_declarations="UpdateGtaDeclarations"></router-view>
 </template>
@@ -65,6 +57,8 @@
 import Spinner from '@/components/pebble-ui/Spinner.vue';
 import PersonnelItem from '@/components/PersonnelItem.vue';
 import { mapActions, mapState } from 'vuex';
+import FooterToolbar from '../components/pebble-ui/toolbar/FooterToolbar.vue';
+import ValidationButtons from '../components/pebble-ui/toolbar/ValidationButtons.vue';
 
 export default {
     inheritAttrs: false,
@@ -80,7 +74,8 @@ export default {
             week: ['Monday', 'tuesday', 'wednesday', 'thursday', 'Friday', 'Saturday', 'Sunday'],
             resumePointageOptions: ['Total heures', 'Heures normales', 'Heures nuit', 'Prime A', 'Alerts'],
             pending: {
-                week: true
+                week: true,
+                validation: false
             },
             summary: [],
             frSummary: {
@@ -98,7 +93,7 @@ export default {
 
     computed: {
 
-        ...mapState(['pointageSelected']),
+        ...mapState(['pointageSelected', 'login']),
 
         /**
          * Retourne la liste des jours entre dd et df.
@@ -137,10 +132,7 @@ export default {
         }
     },
 
-    components: {
-        Spinner,
-        PersonnelItem
-    },
+    components: { Spinner, PersonnelItem, FooterToolbar, ValidationButtons },
 
     methods: {
         ...mapActions(['resetPointage']),
@@ -179,6 +171,7 @@ export default {
             .catch(this.$app.catchError);
         },
 
+
         /**
          * Met a jour la liste des pointages selectionnés
          * @param {Array} selectedPointage liste des pointages selectionnés
@@ -186,6 +179,7 @@ export default {
         updateSelectedPointages(selectedPointage) {
             this.selectedPointages = selectedPointage;
         },
+
 
         /**
          * Met a jour la list de structure temps declaration (std)
@@ -226,13 +220,41 @@ export default {
                     });
                 });
             });
+        },
+
+
+        /**
+         * Valide ou refuse les pointages selectionnés
+         * @param {String} action       action valide ou refuse
+         */
+        actionForSelection(action) {
+            this.pending.validation = true;
+
+            let urlApi = "";
+            let listId= [];
+            let query = {'personneId' : this.login.primary_personne_physique}
+
+            this.pointageSelected.forEach(pointage => {
+                listId.push(pointage.id);
+            });
+
+            listId.join(',');
+
+            if(action === "valider") {
+                urlApi = "/gtaPeriode/POST/" + listId + "/valider";
+            } else {
+                urlApi = "/gtaPeriode/POST/" + listId + "/refuser";
+            }
+
+            this.$app.apiPost(urlApi, query)
+            .then(data => {
+                console.log(data);
+                this.resetPointage();
+                this.pending.validation = false;
+            }).catch(this.$app.catchError);
         }
     },
 
-    /**
-     * Met a jour la list de structure temps declaration (std)
-     * @param {Array} stds contient un/des object structure temps declaration
-     */
     mounted() {
         this.loadDeclarations();
         this.resetPointage();

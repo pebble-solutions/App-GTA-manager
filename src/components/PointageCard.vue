@@ -1,36 +1,50 @@
 <template>
     <div class="card border border-2 mb-2 fs-7" :class="{'border border-info border-2 shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click.prevent="selectedAction()">
         <div class="card-body text-center d-flex justify-content-between align-items-center" v-if="displayMoreInfosTiming">
-            <div class="text-secondary" v-if="periode.valider !== 'OUI'">
-                <i class="bi bi-square" v-if="!selected"></i>
-                <i class="bi bi-check2-square square-color" v-else></i>
-            </div>  
+            <div class="text-secondary" v-if="periode.valider !== 'OUI' && periode.valider != 'NON'">
+                <i class="bi bi-square" role="button" v-if="!selected"></i>
+                <i class="bi bi-check2-square square-color" role="button" v-else></i>
+            </div>
             
             <div class="ms-auto">
-                <router-link :to="{name: 'EditPointage', params: {idStd: pointage.id}}" custom v-slot="{navigate, href}" v-if="periode.valider !== 'OUI'">
+                <router-link :to="{name: 'EditPointage', params: {idStd: pointage.id}}" custom v-slot="{navigate, href}" v-if="periode.valider !== 'OUI' && periode.valider != 'NON'">
                     <a :href="href" @click.stop="navigate" class="text-primary text-decoration-none">
                         <i class="bi bi-pencil-square "></i>
                         Modifier
                     </a>
                 </router-link>
                 
-                <div class="text-success" v-else>
+                <div class="text-success" v-else-if="periode.valider == 'OUI'">
                     <i class="bi bi-lock-fill"></i>
                     Validé
+                </div>
+                <div class="text-danger" v-else>
+                    <i class="bi bi-lock-fill"></i>
+                    Refusé
                 </div>
             </div>
         </div>
         
         <div class="text-center">
-            <div class="alert alert-success border-success rounded-0 mb-0" :class="{'py-1': !displayMoreInfosTiming}">
-                <div v-if="pointage.clock_status === 'over'" :class="{'d-flex justify-content-between align-items-center': !displayMoreInfosTiming && getGtaDeclarationsNotEmpty != 0, 'd-flex justify-content-start align-items-center': getGtaDeclarationsNotEmpty == 0 && !displayMoreInfosTiming}">
-                    <div class="text-secondary" :class="{'me-2' : getGtaDeclarationsNotEmpty == 0}" v-if="!displayMoreInfosTiming">
-                        <i class="bi bi-square" v-if="!selected"></i>
-                        <i class="bi bi-check2-square square-color" v-else></i>
-                    </div>  
-                    
-                    <div v-if="displayMoreInfosTiming">Durée de travail</div>
-                    <div class="fs-5 fw-bold">{{dureetravail}}</div>
+            <div class="rounded-0 mb-0" :class="{'py-1': !displayMoreInfosTiming, 'px-3': !displayMoreInfosTiming && periode.valider !== 'OUI' && periode.valider !== 'NON','border-secondary': periode.valider !== 'OUI' && periode.valider !== 'NON','alert alert-success border-success': periode.valider === 'OUI', 'alert alert-danger border-danger': periode.valider === 'NON', 'alert alert-secondary border-secondary': displayMoreInfosTiming}">
+                <div v-if="pointage.clock_status === 'over'" class="d-flex justify-content-between align-items-center">
+                    <div :class="{'d-flex align-items-center': !displayMoreInfosTiming, 'm-auto': displayMoreInfosTiming}">
+                        <div class="text-secondary me-2" v-if="!displayMoreInfosTiming && periode.valider !== 'OUI' && periode.valider != 'NON'">
+                            <i class="bi bi-square" role="button" v-if="!selected"></i>
+                            <i class="bi bi-check2-square square-color" role="button" v-else></i>
+                        </div>
+    
+                        <div class="text-success me-2" v-if="periode.valider === 'OUI' && !displayMoreInfosTiming">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+    
+                        <div class="text-danger me-2" v-if="periode.valider === 'NON' && !displayMoreInfosTiming">
+                            <i class="bi bi-x-octagon"></i>
+                        </div>
+                        
+                        <div v-if="displayMoreInfosTiming">Durée de travail</div>
+                        <div class="fs-5 fw-bold">{{dureetravail}}</div>
+                    </div>
 
                     <div v-if="getGtaDeclarationsNotEmpty.length > 0 && !displayMoreInfosTiming" class="badge bg-secondary">
                         {{getGtaDeclarationsNotEmpty.length}}
@@ -116,9 +130,9 @@
 
         </div>
 
-        <GtaDeclarationsList v-if="displayMoreInfosTiming" :gta_declarations="gta_declarations" :gta_codages="gta_codages"></GtaDeclarationsList>
+        <GtaDeclarationsList v-if="displayMoreInfosTiming" :periode="periode" :gta_declarations="gta_declarations" :gta_codages="gta_codages"></GtaDeclarationsList>
 
-        <button type="button" class="btn btn-success w-100 rounded-0 d-flex justify-content-between align-items-center" @click.stop="displayMoreInfosTiming = !displayMoreInfosTiming">                              
+        <button type="button" class="btn w-100 rounded-0 d-flex justify-content-between align-items-center" :class="{'btn-secondary bg-gradient' : periode.valider !== 'OUI' && periode.valider !== 'NON', 'btn-success bg-gradient': periode.valider === 'OUI', 'btn-danger bg-gradient': periode.valider === 'NON'}" @click.stop="displayMoreInfosTiming = !displayMoreInfosTiming">                              
             <div>Détails</div>
             <i class="bi" :class="{'bi-caret-up-fill': displayMoreInfosTiming, 'bi-caret-down-fill': !displayMoreInfosTiming}"></i>                                 
         </button>
@@ -247,7 +261,7 @@ export default {
          * avec en premier params, l'OBJECT pointage et en second l'action qui a été effectuée.
          */
         selectedAction() {
-            if(this.periode.valider === 'OUI') {
+            if(this.periode.valider === 'OUI' || this.periode.valider === 'NON' || this.pointage.clock_status !== "over") {
                 return;
             } 
             

@@ -4,9 +4,17 @@
 
 
             <div class="alert alert-danger d-flex justify-content-between mb-0">
-                <div class="text-secondary" >
-                    <i class="bi bi-square" v-if="!selected"></i>
-                    <i class="bi bi-check2-square square-color" v-else></i>
+                <div class="text-secondary"  v-if="periode.valider !== 'OUI' && periode.valider != 'NON'">
+                    <i class="bi bi-square" role="button" v-if="!selected"></i>
+                    <i class="bi bi-check2-square square-color" role="button" v-else></i>
+                </div>
+
+                <div class="text-success" v-if="periode.valider === 'OUI' && !displayMoreInfosTiming">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+
+                <div class="text-danger" v-if="periode.valider === 'NON' && !displayMoreInfosTiming">
+                    <i class="bi bi-x-octagon"></i>
                 </div>
                 
                 Sans durée             
@@ -87,7 +95,7 @@ export default {
             return gtaCodage.nom;
         },
 
-                /**
+        /**
          * Récupere l'action defini (add ou remove) par levent et renvoi un Array au composant parent
          * avec en premier params, l'OBJECT pointage et en second l'action qui a été effectuée.
          */

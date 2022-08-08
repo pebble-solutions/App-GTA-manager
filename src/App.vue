@@ -87,6 +87,7 @@ import Spinner from '@/components/pebble-ui/Spinner.vue'
 import CONFIG from "@/config.json"
 import DateInterval from './components/DateInterval.vue'
 import { mapActions } from 'vuex'
+import date from 'date-and-time';
 
 export default {
 
@@ -161,22 +162,56 @@ export default {
 				let today = new Date();
 				let year = today.getFullYear();
 
-				/* Il est nécessaire de développer une fonction pour traiter les changement d'année :
-				 * Actuellement, si la currentWeek est 202201, la currentWeek-5 est 202196 ce qui n'est pas possible.
-				 * Il faut voir au niveau des fonction natives de JavaScript qui peuvent potentiellement
-				 * permettre de faire des calcule de date (ex : +14 jours ou -35 jours)
-				 */
 				let currentWeek = parseInt(`${year}${this.getWeekNumber(today)}`);
 				this.currentWeek = currentWeek;
-				let start = this.currentWeek-5;
-				let end = (this.currentWeek+2);
+				let start = this.weekCalcul(this.currentWeek, 'less', 5);
+				let end = this.weekCalcul(this.currentWeek, 'add', 2);
 
 				this.loadWeeks(start, end)
 				.then(() => {
 					this.$router.push('/week/'+currentWeek);
 				});
 			}
+		},
 
+		/**
+		 * Ajout ou enleve des semaines a la currentWeek en fonction de l'année.
+		 * 
+		 * @param {String} week		le numero de semaine
+		 * @param {String} action 	action a réaliser sur la currentWeek
+		 *  - add 	ajout des semaines
+		 *  - less	enleve des semaines
+		 * @param {Number} nb		le nb de semaine a ajouter ou enlever
+		 * 
+		 * @return {String} 		return la nouvelle currentWeek 
+		 */
+		weekCalcul(yearWeek, action, nb) {
+			let year = yearWeek.toString().slice(0,4);
+			let week = yearWeek.toString().slice(4,6);
+
+			let isLeap = date.isLeapYear(parseInt(year));
+			let leapYear = isLeap ? 53 : 52;
+
+			let newWeek;
+
+			if (action === "add") {
+				newWeek = parseInt(week) + nb;
+
+				if((leapYear == 53 && newWeek > leapYear) || (leapYear == 52 && newWeek > leapYear)) {
+					newWeek = newWeek - leapYear;
+					// newWeek -= leapYear ??? same ???;
+					year = parseInt(year) + 1;
+				} 
+			} else {
+				newWeek = parseInt(week) - nb;
+
+				if(newWeek < 0) {
+					newWeek = leapYear + newWeek;
+					year = parseInt(year) - 1;
+				}
+			}
+
+			return `${year}${newWeek.toString().length === 1 ? "0" + newWeek : newWeek}`;
 		},
 
 		/**
@@ -207,13 +242,13 @@ export default {
 			let appendMode;
 
 			if(side === 'before') {
-				newStartWeek = parseInt(this.interval[0])-nb;
-				newEndWeek = parseInt(this.interval[0])-1;
+				newStartWeek = this.weekCalcul(this.interval[0], "less", nb);
+				newEndWeek = this.weekCalcul(this.interval[0], "less", 1);
 				direction = "DESC";
 				appendMode = 'unshift';
 			} else {
-				newStartWeek = parseInt(this.interval[1])+1;
-				newEndWeek = parseInt(this.interval[1])+nb;
+				newStartWeek = this.weekCalcul(this.interval[1], "add", 1);
+				newEndWeek = this.weekCalcul(this.interval[1], "add", nb);
 				direction = "ASC";
 				appendMode = 'push';
 			}

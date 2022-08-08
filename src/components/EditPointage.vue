@@ -145,7 +145,7 @@ import { ref } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import date from 'date-and-time';
-import AlertMessage from './pebble-ui/AlertMessage.vue';
+import AlertMessage from '@/components/pebble-ui/AlertMessage.vue';
 
 export default {
     props: {
@@ -179,6 +179,9 @@ export default {
     },
 
     computed: {
+        /**
+         * Recupere une structure temps declaration a partir de l'id dans l'url
+         */
         std() {
             let stdId = this.$route.params.idStd;
             let std;
@@ -196,6 +199,9 @@ export default {
             return std;
         },
 
+        /**
+         * Récupère la liste des Gta Declarations correspondant au pointage 
+         */
         gta_declarations() {
             let stdId = this.$route.params.idStd;
             let gta_declarations;
