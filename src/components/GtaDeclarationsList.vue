@@ -9,11 +9,11 @@
                     <i class="bi bi-check2-square square-color" role="button" v-else></i>
                 </div>
 
-                <div class="text-success" v-if="periode.valider === 'OUI' && !displayMoreInfosTiming">
+                <div class="text-success" v-if="periode.valider === 'OUI'">
                     <i class="bi bi-check2-circle"></i>
                 </div>
 
-                <div class="text-danger" v-if="periode.valider === 'NON' && !displayMoreInfosTiming">
+                <div class="text-danger" v-if="periode.valider === 'NON'">
                     <i class="bi bi-x-octagon"></i>
                 </div>
                 

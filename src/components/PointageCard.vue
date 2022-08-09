@@ -162,7 +162,7 @@
 <script>
 
 import GtaDeclarationsList from '@/components/GtaDeclarationsList.vue';
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 
 export default {
     props: {
@@ -174,7 +174,6 @@ export default {
     data() {
         return {
             displayMoreInfosTiming : false,
-            selected: false,
             validate: false,
         }
     },
@@ -184,6 +183,13 @@ export default {
     },
 
     computed: {
+        ...mapState(["pointageSelected"]),
+
+        selected() { 
+            let found = this.pointageSelected.find(e => e.id == this.pointage.id);
+            return found ? true : false;
+        },
+
         /**
          * Retourne les gta_declarations
          * @return {Object}
@@ -263,9 +269,7 @@ export default {
         selectedAction() {
             if(this.periode.valider === 'OUI' || this.periode.valider === 'NON' || this.pointage.clock_status !== "over") {
                 return;
-            } 
-            
-            this.selected = !this.selected;
+            }
 
             if(this.selected) {
                 this.addPointage(this.periode);

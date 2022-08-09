@@ -146,8 +146,9 @@ export default createStore({
 					state.pointageSelected.splice(index, 1);
 				}
 			} else {
-				console.log('reset');
+				console.log('reset before');
 				state.pointageSelected = [];
+				console.log('reset after', state.pointageSelected);
 			}
 		}
 	},

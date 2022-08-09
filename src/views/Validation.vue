@@ -248,7 +248,7 @@ export default {
 
             this.$app.apiPost(urlApi, query)
             .then(data => {
-                console.log(data);
+                console.log('data', data);
                 this.resetPointage();
                 this.pending.validation = false;
             }).catch(this.$app.catchError);
