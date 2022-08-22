@@ -18,7 +18,7 @@
                 </tr>
             </thead>
 
-            <PersonnelItem v-for="personnel in personnels_declarations" :key="'personnel-'+personnel.id"
+            <PersonnelItem v-for="personnel in personnelsDeclarations" :key="'personnel-'+personnel.id"
                 :personnel="personnel"
                 :weekDays="weekDays"
                 :gta_codages="gta_codages"
@@ -31,7 +31,11 @@
         <ValidationButtons cancelLabel="Refuser" :pending="pending.validation" @confirm="actionForSelection('valider')" @cancel="actionForSelection('refuser')" />
     </FooterToolbar>
 
-    <router-view :personnels_declarations="personnels_declarations" :gta_codages="gta_codages" @update-std="updateStds" @update-gta_declarations="UpdateGtaDeclarations"></router-view>
+    <router-view :gta_codages="gta_codages"
+                
+                @update-std="updateStds" 
+                @update-gta_declarations="updateGtaDeclarations" 
+                @update-summary="updateSummary"></router-view>
 </template>
 
 <style lang="scss">
@@ -69,7 +73,6 @@ export default {
 
     data() {
         return {
-            personnels_declarations: [],
             gta_codages: [],
             week: ['Monday', 'tuesday', 'wednesday', 'thursday', 'Friday', 'Saturday', 'Sunday'],
             resumePointageOptions: ['Total heures', 'Heures normales', 'Heures nuit', 'Prime A', 'Alerts'],
@@ -93,7 +96,7 @@ export default {
 
     computed: {
 
-        ...mapState(['pointageSelected', 'login']),
+        ...mapState(['pointageSelected', 'login', 'personnelsDeclarations']),
 
         /**
          * Retourne la liste des jours entre dd et df.
@@ -127,6 +130,7 @@ export default {
 
     watch: {
         semaine() {
+            this.resetPersonnel();
             this.loadDeclarations();
             this.resetPointage();
         }
@@ -135,7 +139,7 @@ export default {
     components: { Spinner, PersonnelItem, FooterToolbar, ValidationButtons },
 
     methods: {
-        ...mapActions(['resetPointage']),
+        ...mapActions(['resetPointage', 'addPersonnel', 'resetPersonnel', 'refreshPersonnelGtaPeriodes']),
 
         /**
          * Get the day number and month number 
@@ -163,9 +167,11 @@ export default {
                 group_by_personnel: true
             })
             .then( (data) => {
-                this.personnels_declarations = data.personnels;
-                this.gta_codages = data.gta_codages;
+                data.personnels.forEach( (personnel) => {
+                    this.addPersonnel(personnel);
+                });
 
+                this.gta_codages = data.gta_codages;
                 this.pending.week = false;
             })
             .catch(this.$app.catchError);
@@ -187,7 +193,7 @@ export default {
          */
         updateStds(stds) {
             stds.forEach(std => {
-                this.personnels_declarations.forEach(personnel => {
+                this.personnelsDeclarations.forEach(personnel => {
                     personnel.gta_periodes.forEach(periode => {
                         let storedStd = periode.structure_temps_declarations.find(e => e.id == std.id);
 
@@ -206,9 +212,10 @@ export default {
          * Met a jour la list de gta_declaration 
          * @param {Array} declarations contient un/des object gta_declaration
          */
-        UpdateGtaDeclarations(declarations) {
+        updateGtaDeclarations(declarations) {
+            console.log(declarations);
             declarations.forEach(declaration => {
-                this.personnels_declarations.forEach(personnel => {
+                this.personnelsDeclarations.forEach(personnel => {
                     personnel.gta_periodes.forEach(periode => {
                         let storedDeclaration = periode.gta_declarations.find(e => e.id == declaration.id);
 
@@ -228,9 +235,13 @@ export default {
          * @param {String} action       action valide ou refuse
          */
         actionForSelection(action) {
+
+            if (!['valider', 'refuser'].includes(action)) {
+                throw new Error("L'action doit être [valider] ou [refuser]");
+            }
+
             this.pending.validation = true;
 
-            let urlApi = "";
             let listId= [];
             let query = {'personneId' : this.login.primary_personne_physique}
 
@@ -240,22 +251,23 @@ export default {
 
             listId.join(',');
 
-            if(action === "valider") {
-                urlApi = "/gtaPeriode/POST/" + listId + "/valider";
-            } else {
-                urlApi = "/gtaPeriode/POST/" + listId + "/refuser";
-            }
+            let urlApi = `/gtaPeriode/POST/${listId}/${action}`;
 
             this.$app.apiPost(urlApi, query)
-            .then(data => {
-                console.log('data', data);
+            .then((data) => {
+                this.refreshPersonnelGtaPeriodes(data);
                 this.resetPointage();
                 this.pending.validation = false;
             }).catch(this.$app.catchError);
+        },
+
+        updateSummary(codages){
+            console.table(codages);
         }
     },
 
     mounted() {
+        this.resetPersonnel();
         this.loadDeclarations();
         this.resetPointage();
     }

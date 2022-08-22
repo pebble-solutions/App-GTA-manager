@@ -7,12 +7,12 @@
 
             <span class="fst-italic">{{allPointages()}}</span>
 
-            <ProgressBar :two-color="true" progress-color="success" rest-color="warning" :progress-value="progressValue" v-if="semaine.total > 0"></ProgressBar>
+            <StackedBar :bars="stackedBarValue" :percentage="true" :totalValue="semaine.total" v-if="semaine.total > 0"></StackedBar>
         </div>
 </template>
 
 <script>
-import ProgressBar from '@/components/pebble-ui/loader/ProgressBar.vue';
+import StackedBar from '@/components/pebble-ui/charts/StackedBar.vue';
 import DateInterval from './DateInterval.vue';
 
 export default {
@@ -22,17 +22,37 @@ export default {
 
     computed: {
         /**
-         * Calcule la progression de la progressbar
+         * Retourne un tableau qui contient un object pour chaque bar
+         * l'object contient une couleur et une valeur en %
          * 
-         * @return {Number}     en % ex: 20 pour 20% 
+         * @return {Array}     en % ex: 20 pour 20% 
          */
-        progressValue() {
-            return (this.semaine.valider*100)/this.semaine.total;
+        stackedBarValue() {
+            // let totalValider = (this.semaine.valider*100) / this.semaine.total;
+            // let totalRejeter = (this.semaine.rejeter*100) / this.semaine.total;
+            // let rest = 100 - (totalValider + totalRejeter);
+
+            return [
+                {
+                    'color' : "success", 
+                    // 'value' : totalValider.toFixed(0),
+                    'value' : this.semaine.valider
+                },
+                {
+                    'color' : "danger",
+                    'value' : this.semaine.rejeter
+                    // 'value' : totalRejeter.toFixed(0),
+                },
+                {
+                    'color' : "warning",
+                    'value' : this.semaine.total - (this.semaine.valider + this.semaine.rejeter)
+                }
+            ];
         }
     },
 
     components: {
-        ProgressBar,
+        StackedBar,
         DateInterval
     },
 

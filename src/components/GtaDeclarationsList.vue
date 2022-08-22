@@ -1,28 +1,6 @@
 <template>
-    <div :class="{'card border border-2 mb-2': card, 'border-danger': anomaly && !selected, 'border border-info border-2 shadow-info': selected}" v-if="getGtaDeclarationsNotEmpty.length > 0 || card" @click.prevent="selectedAction()">
-        <div v-if="anomaly">
-
-
-            <div class="alert alert-danger d-flex justify-content-between mb-0">
-                <div class="text-secondary"  v-if="periode.valider !== 'OUI' && periode.valider != 'NON'">
-                    <i class="bi bi-square" role="button" v-if="!selected"></i>
-                    <i class="bi bi-check2-square square-color" role="button" v-else></i>
-                </div>
-
-                <div class="text-success" v-if="periode.valider === 'OUI'">
-                    <i class="bi bi-check2-circle"></i>
-                </div>
-
-                <div class="text-danger" v-if="periode.valider === 'NON'">
-                    <i class="bi bi-x-octagon"></i>
-                </div>
-                
-                Sans durée             
-            </div>
-        </div>
-
+    <div :class="{'card border border-2 mb-2': card, 'border-danger': anomaly && !selected}" v-if="getGtaDeclarationsNotEmpty.length > 0 || card" >
         <div class="card-body" :class="{'py-1 pt-2': card}">
-
             <div class="fw-bold cursor-pointer" @click.stop="displayMoreInfosReport = !displayMoreInfosReport" >
                 <div class="d-flex justify-content-between align-items-start border-top border-secondary">
                     <h3 class="fs-7 fw-bold text-truncate me-2" :class="{'mb-0': card}" :title="getGtaDeclarationsNotEmpty.length + ' Déclarations'">
@@ -46,7 +24,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 
 export default {
     props: {
@@ -62,13 +40,27 @@ export default {
             default: false
         }
     },
+
+
     data() {
         return {
             displayMoreInfosReport: false,
-            selected: false,
         };
     },
+
+
     computed: {
+        ...mapState(["pointageSelected"]),
+
+        /**
+         * le pointage passe en selected si il se trouve dans le tableau pointageSelected
+         * du store
+         */
+        selected() { 
+            let found = this.pointageSelected.find(e => e.id == this.periode.id);
+            return found ? true : false;
+        },
+
         /**
          * Filtre gta_declarations pour n'avoir que ce avec un qte superieur a 0
          *
@@ -80,6 +72,8 @@ export default {
             return notEmpty;
         },
     },
+
+
     methods: {
         ...mapActions(["addPointage", "removePointage"]),
 
@@ -99,21 +93,17 @@ export default {
          * Récupere l'action defini (add ou remove) par levent et renvoi un Array au composant parent
          * avec en premier params, l'OBJECT pointage et en second l'action qui a été effectuée.
          */
-        selectedAction() {
-            if(this.periode.valider === 'OUI') {
-                return;
-            } 
-            
-            this.selected = !this.selected;
-
-            if(this.selected) {
-                this.addPointage(this.periode);
-            } else {
-                this.removePointage(this.periode)
-            }
-        },
-
-
+        // selectedAction() {
+        //     if(this.periode.valider === 'OUI') {
+        //         return;
+        //     }
+                    
+        //     if(!this.selected) {
+        //         this.addPointage(this.periode);
+        //     } else {
+        //         this.removePointage(this.periode)
+        //     }
+        // },
     },
 }
 </script>

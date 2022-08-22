@@ -1,138 +1,36 @@
 <template>
     <div class="card border border-2 mb-2 fs-7" :class="{'border border-info border-2 shadow-info': selected, 'border border-success': validate, 'shadow': !selected}" @click.prevent="selectedAction()">
-        <div class="card-body text-center d-flex justify-content-between align-items-center" v-if="displayMoreInfosTiming">
-            <div class="text-secondary" v-if="periode.valider !== 'OUI' && periode.valider != 'NON'">
-                <i class="bi bi-square" role="button" v-if="!selected"></i>
-                <i class="bi bi-check2-square square-color" role="button" v-else></i>
-            </div>
-            
-            <div class="ms-auto">
-                <router-link :to="{name: 'EditPointage', params: {idStd: pointage.id}}" custom v-slot="{navigate, href}" v-if="periode.valider !== 'OUI' && periode.valider != 'NON'">
-                    <a :href="href" @click.stop="navigate" class="text-primary text-decoration-none">
-                        <i class="bi bi-pencil-square "></i>
-                        Modifier
-                    </a>
-                </router-link>
+        <PointageCardHeader :selected="selected" 
+                            :periode="periode" 
+                            :pointage="pointage" 
+                            :displayMoreInfosTiming="displayMoreInfosTiming" 
+                            :getGtaDeclarationsNotEmpty="getGtaDeclarationsNotEmpty" 
+                            :dureetravail="dureetravail"
+                            :personnel="personnel"/>
+
+        <transition name="slide">
+            <PointageCardDetail v-if="displayMoreInfosTiming" 
+                                
+                                :periode="periode" 
+                                :pointage="pointage" 
+                                :dureetravail="dureetravail" 
+                                :pause="pause"
+                                :personnel="personnel"/>
+        </transition>
+
+        <GtaDeclarationsList    v-if="displayMoreInfosTiming" 
+                                
+                                :periode="periode" 
+                                :gta_declarations="gta_declarations" 
+                                :gta_codages="gta_codages">
+        </GtaDeclarationsList>
+
+        <button type="button" 
                 
-                <div class="text-success" v-else-if="periode.valider == 'OUI'">
-                    <i class="bi bi-lock-fill"></i>
-                    Validé
-                </div>
-                <div class="text-danger" v-else>
-                    <i class="bi bi-lock-fill"></i>
-                    Refusé
-                </div>
-            </div>
-        </div>
-        
-        <div class="text-center">
-            <div class="rounded-0 mb-0" :class="{'py-1': !displayMoreInfosTiming, 'px-3': !displayMoreInfosTiming && periode.valider !== 'OUI' && periode.valider !== 'NON','border-secondary': periode.valider !== 'OUI' && periode.valider !== 'NON','alert alert-success border-success': periode.valider === 'OUI', 'alert alert-danger border-danger': periode.valider === 'NON', 'alert alert-secondary border-secondary': displayMoreInfosTiming}">
-                <div v-if="pointage.clock_status === 'over'" class="d-flex justify-content-between align-items-center">
-                    <div :class="{'d-flex align-items-center': !displayMoreInfosTiming, 'm-auto': displayMoreInfosTiming}">
-                        <div class="text-secondary me-2" v-if="!displayMoreInfosTiming && periode.valider !== 'OUI' && periode.valider != 'NON'">
-                            <i class="bi bi-square" role="button" v-if="!selected"></i>
-                            <i class="bi bi-check2-square square-color" role="button" v-else></i>
-                        </div>
-    
-                        <div class="text-success me-2" v-if="periode.valider === 'OUI' && !displayMoreInfosTiming">
-                            <i class="bi bi-check2-circle"></i>
-                        </div>
-    
-                        <div class="text-danger me-2" v-if="periode.valider === 'NON' && !displayMoreInfosTiming">
-                            <i class="bi bi-x-octagon"></i>
-                        </div>
-                        
-                        <div v-if="displayMoreInfosTiming">Durée de travail</div>
-                        <div class="fs-5 fw-bold">{{dureetravail}}</div>
-                    </div>
-
-                    <div v-if="getGtaDeclarationsNotEmpty.length > 0 && !displayMoreInfosTiming" class="badge bg-secondary">
-                        {{getGtaDeclarationsNotEmpty.length}}
-                    </div>
-                </div>
-
-                <div v-else>
-                    <div>
-                        début 
-                        <span v-if="pointage.dd_correction && pointage.dd_correction != '0000-00-00 00:00:00'">
-                            {{new Date(pointage.dd_correction).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                        </span>
-
-                        <span v-else>
-                            {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                        </span>
-                    </div>
-                    <div>En cours...</div>
-                </div>
-
-                <transition name="slide">
-                    <div v-if="displayMoreInfosTiming">
-                        <div class="border-top border-warning py-2 my-2" v-if="pause !== '00:00'">
-                            <div>Pause</div>
-                            <div class="fs-5 fw-bold">{{pause}}</div>
-                            <div>
-                                <span v-if="pointage.dpd_correction && pointage.dpd_correction !== '0000-00-00 00:00:00'">
-                                    {{new Date(pointage.dpd_correction).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                                </span>
-                                <span v-else-if="pointage.dpd_correction === '0000-00-00 00:00:00'">
-                                    00:00
-                                </span>
-                                <span v-else>
-                                    {{new Date(pointage.dpd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                                </span>
-
-                                <i class="bi bi-chevron-right"></i>
-
-                                <span v-if="pointage.dfp_correction && pointage.dfp_correction !== '0000-00-00 00:00:00'">
-                                    {{new Date(pointage.dfp_correction).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                                </span>
-                                <span v-else-if="pointage.dfp_correction === '0000-00-00 00:00:00'">
-                                    00:00
-                                </span>
-                                <span v-else>
-                                    {{new Date(pointage.dfp).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="border-top border-warning pt-2 mt-2" v-if="!pointage.dpd || pointage.dpd !== '0000-00-00 00:00:00'">
-                            <div>Amplitude</div>
-                            <div class="fs-5 fw-bold">{{amplitude}}</div>
-                            <div>
-                                <span v-if="pointage.dd_correction && pointage.dd_correction != '0000-00-00 00:00:00'">
-                                    {{new Date(pointage.dd_correction).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                                </span>
-                                <span v-else>
-                                    {{new Date(pointage.dd).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                                </span>
-
-                                <i class="bi bi-chevron-right"></i>
-
-                                <span v-if="pointage.df_correction && pointage.df_correction != '0000-00-00 00:00:00'">
-                                    {{new Date(pointage.df_correction).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                                </span>
-                                <span v-else>
-                                    {{new Date(pointage.df).toLocaleTimeString('fr-FR', {hour:'numeric', minute:'2-digit'})}}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="border-top border-warning pt-2 mt-2" v-if="pointage.justification">
-                            <div>
-                                <h3 class="fs-7 fw-bold">Justification</h3>
-
-                                <div class="text-secondary text-center fst-italic">{{pointage.justification}}</div>
-                            </div>
-                        </div>
-                    </div>
-                </transition>
-            </div>
-
-        </div>
-
-        <GtaDeclarationsList v-if="displayMoreInfosTiming" :periode="periode" :gta_declarations="gta_declarations" :gta_codages="gta_codages"></GtaDeclarationsList>
-
-        <button type="button" class="btn w-100 rounded-0 d-flex justify-content-between align-items-center" :class="{'btn-secondary bg-gradient' : periode.valider !== 'OUI' && periode.valider !== 'NON', 'btn-success bg-gradient': periode.valider === 'OUI', 'btn-danger bg-gradient': periode.valider === 'NON'}" @click.stop="displayMoreInfosTiming = !displayMoreInfosTiming">                              
+                class="btn w-100 rounded-0 d-flex justify-content-between align-items-center" 
+                :class="{'btn-secondary bg-gradient' : periode.valider !== 'OUI' && periode.valider !== 'NON', 'btn-success bg-gradient': periode.valider === 'OUI', 'btn-danger bg-gradient': periode.valider === 'NON'}" 
+                
+                @click.stop="displayMoreInfosTiming = !displayMoreInfosTiming">                              
             <div>Détails</div>
             <i class="bi" :class="{'bi-caret-up-fill': displayMoreInfosTiming, 'bi-caret-down-fill': !displayMoreInfosTiming}"></i>                                 
         </button>
@@ -163,12 +61,16 @@
 
 import GtaDeclarationsList from '@/components/GtaDeclarationsList.vue';
 import { mapActions, mapState } from 'vuex';
+import PointageCardHeader from './PointageCardHeader.vue';
+import PointageCardDetail from './PointageCardDetail.vue';
+import {calculateDiffDate} from '@/js/date.js';
 
 export default {
     props: {
         pointage: Object,
         gta_codages: Object,
-        periode: Object
+        periode: Object,
+        personnel: Object
     },
 
     data() {
@@ -178,15 +80,17 @@ export default {
         }
     },
 
-    components: {
-        GtaDeclarationsList
-    },
+    components: { GtaDeclarationsList, PointageCardHeader, PointageCardDetail },
 
     computed: {
         ...mapState(["pointageSelected"]),
 
+        /**
+         * le pointage passe en selected si il se trouve dans le tableau pointageSelected
+         * du store
+         */
         selected() { 
-            let found = this.pointageSelected.find(e => e.id == this.pointage.id);
+            let found = this.pointageSelected.find(e => e.id == this.periode.id);
             return found ? true : false;
         },
 
@@ -206,19 +110,9 @@ export default {
         amplitude() {
             let dd = this.pointage.dd_correction && this.pointage.dd_correction !== "0000-00-00 00:00:00" ? this.pointage.dd_correction : this.pointage.dd;
             let df = this.pointage.df_correction && this.pointage.df_correction !== "0000-00-00 00:00:00" ? this.pointage.df_correction : this.pointage.df;
-            return this.calculateDiffDate(dd, df);
+            return calculateDiffDate(dd, df);
         },
 
-        /**
-         * Calcule la pause entre la date de début et la date de fin 
-         * 
-         * @return {Number}
-         */
-        pause() {
-            let dpd = this.pointage.dpd_correction ? this.pointage.dpd_correction : this.pointage.dpd;
-            let dfp = this.pointage.dfp_correction ? this.pointage.dfp_correction : this.pointage.dfp;
-            return this.calculateDiffDate(dpd, dfp);
-        },
 
         /**
          * Calcule la durée de travail entre la date de début et la date de fin 
@@ -240,7 +134,18 @@ export default {
             pause.setHours(pauseArray[0]);
             pause.setMinutes(pauseArray[1]);
 
-            return this.calculateDiffDate(amplitude, pause);
+            return calculateDiffDate(amplitude, pause);
+        },
+
+        /**
+         * Calcule la pause entre la date de début et la date de fin 
+         * 
+         * @return {Number}
+         */
+        pause() {
+            let dpd = this.pointage.dpd_correction ? this.pointage.dpd_correction : this.pointage.dpd;
+            let dfp = this.pointage.dfp_correction ? this.pointage.dfp_correction : this.pointage.dfp;
+            return calculateDiffDate(dpd, dfp);
         },
 
         /**
@@ -267,45 +172,15 @@ export default {
          * avec en premier params, l'OBJECT pointage et en second l'action qui a été effectuée.
          */
         selectedAction() {
-            if(this.periode.valider === 'OUI' || this.periode.valider === 'NON' || this.pointage.clock_status !== "over") {
+            if(this.periode.valider === 'OUI' || this.periode.valider === 'NON' || this.pointage.length > 0 && this.pointage.clock_status !== "over") {
                 return;
             }
 
-            if(this.selected) {
+            if(!this.selected) {
                 this.addPointage(this.periode);
             } else {
                 this.removePointage(this.periode)
             }
-        },
-
-        /**
-         * Calcule une durée entre 2 date
-         * @param {String} sd       
-         * @param {String} sf 
-         * 
-         * @return {String}         format hours : minutes
-         */
-        calculateDiffDate(sd, sf) {
-            let dd = new Date(sd);
-            let df = new Date(sf);
-
-            let diff = Math.abs(dd - df);
-
-            let minutes = Math.floor((diff / (1000 * 60)) % 60),
-                hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-
-            if(!minutes) {
-                minutes = '0';
-            }
-
-            if(!hours) {
-                hours = '0';
-            }
-
-            hours = (hours < 10) ? "0" + hours : hours;
-            minutes = (minutes < 10) ? "0" + minutes : minutes;
-
-            return hours + ":" + minutes; 
         },
     }
 }

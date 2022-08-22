@@ -8,7 +8,8 @@ export default createStore({
 		elements: [],
 		openedElement: null,
 		tmpElement: null,
-		pointageSelected: []
+		pointageSelected: [],
+		personnelsDeclarations: [],
 	},
 	getters: {
 		activeStructure(state) {
@@ -146,10 +147,76 @@ export default createStore({
 					state.pointageSelected.splice(index, 1);
 				}
 			} else {
-				console.log('reset before');
 				state.pointageSelected = [];
-				console.log('reset after', state.pointageSelected);
 			}
+		},
+
+		/**
+		 * Ajout ou retire un personnels declarations (personnel qui contient gta_declaration et structure temps declarations) du tableau  personnelsDeclarations
+		 * @param {Object} state le state de l'instance vuex
+		 * @param {Object} optionsPersonnels 
+		 * 		- personnel {Object}		le personnel qui a un pointage dans la semaine selectionnée
+		 * 		- personnels {Array}		une liste de personnels sur lesquels réaliser l'action
+		 * 		- action {String}			l'action a faire sur le tableau, add/remove/reset/refresh
+		 */
+		personnels_declaration(state, optionsPersonnels) {
+
+			let personnels = optionsPersonnels.personnel ? [optionsPersonnels.personnel] : optionsPersonnels.personnels;
+
+			if(optionsPersonnels.action == 'add') {
+				personnels.forEach(personnel => {
+					state.personnelsDeclarations.push(personnel);
+				})
+			} else if (optionsPersonnels.action == 'remove') {
+				personnels.forEach(personnel => {
+					let index = state.personnelsDeclarations.findIndex(p => p.id === personnel.id);
+
+					if(index !== -1) {
+						state.personnelsDeclarations.splice(index, 1);
+					}
+				});
+			} 
+			else if (optionsPersonnels.action == 'refresh') {
+				personnels.forEach(personnel => {
+					let index = state.personnelsDeclarations.findIndex(p => p.id === personnel.id);
+
+					if (index !== -1) {
+						for (const key in personnel) {
+							state.personnelsDeclarations[index][key] = personnel[key];
+						}
+					}
+				});
+			}
+			else {
+				state.personnelsDeclarations = [];
+			}
+		},
+
+		/**
+		 * Met à jour des GtaPeriodes sur le personnel stocké dans le store. Si la GtaPeriode n'existe pas 
+		 * sur le personnel, elle est ajouter grâce au structure__personnel_id
+		 * @param {Object} state Le state de VueX
+		 * @param {Array} gta_periodes Collection de gta_periodes à mettre à jour
+		 */
+		personnel_gta_periodes(state, gta_periodes) {
+			console.log('in store', gta_periodes);
+			gta_periodes.forEach(GtaPeriode => {
+				let personnel = state.personnelsDeclarations.find(e => e.id === GtaPeriode.structure__personnel_id);
+
+				if (personnel) {
+					let periode = personnel.gta_periodes.find(e => e.id === GtaPeriode.id);
+
+
+					if (periode) {
+						for (const key in GtaPeriode) {
+							periode[key] = GtaPeriode[key];
+						}
+					}
+					else {
+						personnel.gta_periodes.push(GtaPeriode);
+					}
+				}
+			});
 		}
 	},
 	actions: {
@@ -268,6 +335,51 @@ export default createStore({
 		 */
 		resetPointage(context) {
 			context.commit('pointage_selected', {action : 'reset'});
+		}, 
+
+		/**
+		 * Ajout un personnel a la liste des personnel declaration
+		 * @param {Object} context Instance vuex
+		 * @param {Object} personnel personnel a ajouter
+		 */
+		addPersonnel(context, personnel) {
+			context.commit('personnels_declaration', {personnel, action : 'add'});
+		},
+
+		/**
+		 * Remove un personnel a la liste des personnels declaration
+		 * @param {Object} context Instance vRemove	 
+		 * @param {Object} personnel personnel a ajouter
+		 */
+		removePersonnel(context, personnel) {
+			context.commit('personnels_declaration', {personnel, action : 'remove'});
+		},
+
+		/**
+		 * Remove un personnel a la liste des personnels declaration
+		 * @param {Object} context Instance vRemove	 
+		 */
+		resetPersonnel(context) {
+			context.commit('personnels_declaration', {action : 'reset'});
+		},
+
+		/**
+		 * Met à jour les informations d'un ou plusieurs personnels
+		 * @param {Object} context Instance VueX
+		 * @param {Array} personnels Collection de personnels à mettre à jour
+		 */
+		refreshPersonnel(context, personnels) {
+			context.commit('personnels_declaration', {personnels, action : 'refresh'});
+		},
+
+
+		/**
+		 * Met à jour des gta_periodes sur la collection de personnels stockée dans le store
+		 * @param {Object} context Instance VueX
+		 * @param {Array} gta_periodes Collection de Gta Periodes
+		 */
+		refreshPersonnelGtaPeriodes(context, gta_periodes) {
+			context.commit('personnel_gta_periodes', gta_periodes);
 		}
 
 
