@@ -54,42 +54,6 @@
                             </PointageCard>
                         </template>
                     </template> 
-
-                    
-
-
-
-                    <!-- <template v-if="periode.structure_temps_declarations.length > 0">
-                        <PointageCard 
-                            :periode="periode"
-                            :pointage="std" 
-                            :gta_codages="gta_codages"
-                            
-                            v-for="std in periode.structure_temps_declarations" 
-                            :key="'declaration-'+periode.id+'-'+std.id"></PointageCard>
-                    </template>
-
-                    <template v-else-if="periode.gta_declarations.length > 0 && periode.structure_temps_declarations.length == 0">
-                        <GtaDeclarationsList 
-                            :gta_declarations="periode.gta_declarations" 
-                            :gta_codages="gta_codages" 
-                            :periode="periode" 
-                            :anomaly="true" 
-                            :card="true"></GtaDeclarationsList>
-                    </template>
-
-                    <template v-else>
-                        <div class="card border border-2">
-                            <div class="card-body text-center">
-                                Periode Vide
-
-                                <button class="btn btn-danger">
-                                    <i class="bi bi-trash"></i>
-                                    Supprimer
-                                </button>
-                            </div>
-                        </div>
-                    </template> -->
                 </template>
             </td>
 

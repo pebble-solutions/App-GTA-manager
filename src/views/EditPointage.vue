@@ -127,7 +127,7 @@ export default {
     components: { AppModal, StdForm, DeclarationForm },
 
     methods: {
-        ...mapActions(['refreshPersonnelGtaPeriodes']),
+        ...mapActions(['refreshPersonnelGtaPeriodes', 'refreshPersonnel']),
         
         /**
          * Permet de retourner a lurl avant louverture de la modal quand on vient fermer cette modal
@@ -148,37 +148,15 @@ export default {
                 query.df_correction = date.format(this.tmpStd.df_date, 'YYYY-MM-DD') + ' ' + this.tmpStd.df_time.hours + ':' + this.tmpStd.df_time.minutes;
                 query.dpd_correction = this.tmpStd.dpd_date ? date.format(this.tmpStd.dpd_date, 'YYYY-MM-DD') + ' ' + (this.tmpStd.dpd_time.hours < 10 ? "0" : "") + this.tmpStd.dpd_time.hours + ':' + (this.tmpStd.dpd_time.minutes < 10 ? "0" : "") + this.tmpStd.dpd_time.minutes : null;
                 query.dfp_correction = this.tmpStd.dfp_date ? date.format(this.tmpStd.dfp_date, 'YYYY-MM-DD') + ' ' + (this.tmpStd.dfp_time.hours < 10 ? "0" : "") + this.tmpStd.dfp_time.hours + ':' + (this.tmpStd.dfp_time.minutes < 10 ? "0" : "") + this.tmpStd.dfp_time.minutes : null;
+                query.structure_temps_declaration = this.std.id;
             }
 
             if(this.gta_declarations) {
                 query.gta_declarations = JSON.stringify(this.tmpStd.gta_declarations)
             }
 
-            this.$app.apiPost(urlApi, query
-            //  {
-            //     'dd_correction': date.format(this.tmpStd.dd_date, 'YYYY-MM-DD') + ' ' + this.tmpStd.dd_time.hours + ':' + this.tmpStd.dd_time.minutes,
-            //     'df_correction': date.format(this.tmpStd.df_date, 'YYYY-MM-DD') + ' ' + this.tmpStd.df_time.hours + ':' + this.tmpStd.df_time.minutes,
-            //     'dpd_correction': this.tmpStd.dpd_date ? date.format(this.tmpStd.dpd_date, 'YYYY-MM-DD') + ' ' + (this.tmpStd.dpd_time.hours < 10 ? "0" : "") + this.tmpStd.dpd_time.hours + ':' + (this.tmpStd.dpd_time.minutes < 10 ? "0" : "") + this.tmpStd.dpd_time.minutes : null,
-            //     'dfp_correction': this.tmpStd.dfp_date ? date.format(this.tmpStd.dfp_date, 'YYYY-MM-DD') + ' ' + (this.tmpStd.dfp_time.hours < 10 ? "0" : "") + this.tmpStd.dfp_time.hours + ':' + (this.tmpStd.dfp_time.minutes < 10 ? "0" : "") + this.tmpStd.dfp_time.minutes : null,
-            //     'gta_declarations' : JSON.stringify(this.tmpStd.gta_declarations),
-            //     'structure_temps_declaration': this.std.id            }
-            ).then((data) => {      
-                let gtaPeriodeUpdate = [];
-                
-                this.personnelsDeclarations.forEach(personnel => {
-                    console.log('personnel', personnel);
-
-                    personnel.gta_periodes.forEach(periode => { 
-                        if(periode.id == data.id) {
-                            gtaPeriodeUpdate.push(data);
-                            this.refreshPersonnelGtaPeriodes(gtaPeriodeUpdate);
-                        }
-                    });
-                });
-
-                //this.$emit('update-std', data['structure_temps_declaration']);
-                //this.$emit('update-gta_declarations', data['gta_declarations']);
-
+            this.$app.apiPost(urlApi, query)
+            .then(() => {      
                 let urlApiCounters = "structureTempsDeclaration/GET/listDeclarations"
                 let startDate = this.getStartDateOfISOWeek(this.$route.params.id.substr(4,2), this.$route.params.id.substr(0,4));
 
@@ -188,10 +166,9 @@ export default {
                     'group_by_personnel': true,
                     'structure__personnel_id': this.personnelId,
                 });
-
             })
-            .then((dataByPersonnel) => {
-                this.$emit('update-summary', dataByPersonnel);
+            .then((dataByPersonnel) => {                
+                this.refreshPersonnel(dataByPersonnel.personnels);
                 this.$router.push('/week/'+ this.$route.params.id);
             })
             .catch(this.$app.catchError);
@@ -227,15 +204,11 @@ export default {
         checkIfCorrection(dateNoCorrection, dateCorrection) {
             let date;
 
-            console.log('dateNoCorrection', dateNoCorrection);
-            console.log('dateCorrection', dateCorrection);
-
             if(dateCorrection && dateCorrection !== "0000-00-00 00:00:00") {
                 date = new Date(dateCorrection);
             } else {
                 date = !dateNoCorrection || dateNoCorrection == "0000-00-00 00:00:00" ? null : new Date(dateNoCorrection);
             }
-                console.log('date', date);
 
             return date;
         },
@@ -247,7 +220,7 @@ export default {
             if(this.checkIfCorrection(this.std.dpd, this.std.dpd_correction)) {
                 this.showBreak = true;
             }
-            console.log('this std dd ', this.std.dd);
+
             let dd = this.checkIfCorrection(this.std.dd, this.std.dd_correction);
             this.tmpStd.dd_date = ref(dd);
             this.tmpStd.dd_time = ref({
@@ -281,10 +254,6 @@ export default {
         if(this.gta_declarations) {
             this.tmpStd.gta_declarations = JSON.parse(JSON.stringify(this.gta_declarations));
         }
-
-        console.table('tmpstd', this.tmpStd);
-        console.log('gta declaration', this.gta_declarations);
-        console.table('personnelsDeclarations', this.personnelsDeclarations);
     },
 }
 </script>

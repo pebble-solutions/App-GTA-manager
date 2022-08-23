@@ -172,7 +172,7 @@ export default {
          * avec en premier params, l'OBJECT pointage et en second l'action qui a été effectuée.
          */
         selectedAction() {
-            if(this.periode.valider === 'OUI' || this.periode.valider === 'NON' || this.pointage.length > 0 && this.pointage.clock_status !== "over") {
+            if(this.periode.valider === 'OUI' || this.periode.valider === 'NON' || this.pointage.clock_status === "open") {
                 return;
             }
 

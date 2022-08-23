@@ -27,7 +27,8 @@
                 <PointageCardStatus :periode="periode" :selected="selected" />
     
                 <div class="fs-5 fw-bold">
-                    {{dureetravail}}
+                    <span v-if="periode.valider !== 'OUI' && periode.valider !== 'NON'" role="button">{{dureetravail}}</span>
+                    <span v-else>{{dureetravail}}</span>
                 </div>
     
                 <div v-if="getGtaDeclarationsNotEmpty" class="ms-auto">
@@ -47,8 +48,21 @@
                     }">
                 <PointageCardStatus :periode="periode" :selected="selected" />
     
-                <div v-if="personnel.forfait_jour === 'OUI'">Forfait Jour</div>
-                <div v-else>Sans durée</div>
+                <div v-if="personnel.forfait_jour === 'OUI'">
+                    <span v-if="periode.valider !== 'OUI' && periode.valider !== 'NON'" role="button">Forfait J.</span>    
+                    <span v-else>Forfait J.</span>    
+                </div>
+
+                <div v-else>
+                    <span v-if="periode.valider !== 'OUI' && periode.valider !== 'NON'" role="button">Sans durée</span>
+                    <span v-else>Sans durée</span>
+                </div>
+
+                <div v-if="getGtaDeclarationsNotEmpty" class="ms-auto">
+                    <div v-if="getGtaDeclarationsNotEmpty.length > 0" class="badge bg-secondary">
+                        {{getGtaDeclarationsNotEmpty.length}}
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -20,7 +20,7 @@
         <div v-show="addInfos" class="py-2" >
             <div class="input-group" >
                 <select class="form-select" id="inputGroupSelect04" v-model="infosToAdd.gta__codage_id" aria-label="Example select with button addon">
-                    <option class="text-truncate" v-for="gta_codage in gta_codages" :key="'gtacodage-'+gta_codage.id" :value="gta_codage.id">
+                    <option class="text-truncate" v-for="gta_codage in gtaCodagesList" :key="'gtacodage-'+gta_codage.id" :value="gta_codage.id">
                         {{gta_codage.nom}}
                     </option>
                 </select>
@@ -80,7 +80,8 @@ export default {
             },
             error: {
                 addInfos : null,
-            }
+            },
+            gtaCodagesList: null,
         }
     },
 
@@ -133,10 +134,26 @@ export default {
                 declaration.qte_retenue ? declaration.qte_retenue-- : declaration.qte--;
             }
         },
+
+        /***
+         * Retourn toute la liste des gta codage
+         * 
+         * @return {Array}
+         */
+        getGtaCodagelist() {
+            let apiUrl = "gtaCodage/GET/list";
+
+            this.$app.apiGet(apiUrl, {})
+            .then((data) => {
+                this.gtaCodagesList = data;
+            }).catch(this.$app.catchError);
+        }
     },
     
     mounted() {
         this.tmpDeclarations = this.gta_declarations;
+
+        this.getGtaCodagelist();
     }
 }
 </script>

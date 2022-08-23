@@ -213,7 +213,6 @@ export default {
          * @param {Array} declarations contient un/des object gta_declaration
          */
         updateGtaDeclarations(declarations) {
-            console.log(declarations);
             declarations.forEach(declaration => {
                 this.personnelsDeclarations.forEach(personnel => {
                     personnel.gta_periodes.forEach(periode => {

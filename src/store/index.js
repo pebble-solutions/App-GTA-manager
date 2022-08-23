@@ -160,7 +160,6 @@ export default createStore({
 		 * 		- action {String}			l'action a faire sur le tableau, add/remove/reset/refresh
 		 */
 		personnels_declaration(state, optionsPersonnels) {
-
 			let personnels = optionsPersonnels.personnel ? [optionsPersonnels.personnel] : optionsPersonnels.personnels;
 
 			if(optionsPersonnels.action == 'add') {
@@ -199,7 +198,6 @@ export default createStore({
 		 * @param {Array} gta_periodes Collection de gta_periodes à mettre à jour
 		 */
 		personnel_gta_periodes(state, gta_periodes) {
-			console.log('in store', gta_periodes);
 			gta_periodes.forEach(GtaPeriode => {
 				let personnel = state.personnelsDeclarations.find(e => e.id === GtaPeriode.structure__personnel_id);
 
