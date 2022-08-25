@@ -216,7 +216,6 @@ export default {
 
     mounted() {
         if(this.std) {
-            console.table('std', this.std);
             if(this.checkIfCorrection(this.std.dpd, this.std.dpd_correction)) {
                 this.showBreak = true;
             }

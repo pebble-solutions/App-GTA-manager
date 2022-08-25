@@ -34,8 +34,7 @@
     <router-view :gta_codages="gta_codages"
                 
                 @update-std="updateStds" 
-                @update-gta_declarations="updateGtaDeclarations" 
-                @update-summary="updateSummary"></router-view>
+                @update-gta_declarations="updateGtaDeclarations"></router-view>
 </template>
 
 <style lang="scss">
@@ -96,7 +95,7 @@ export default {
 
     computed: {
 
-        ...mapState(['pointageSelected', 'login', 'personnelsDeclarations']),
+        ...mapState(['pointageSelected', 'login', 'personnelsDeclarations', 'semaines']),
 
         /**
          * Retourne la liste des jours entre dd et df.
@@ -139,7 +138,7 @@ export default {
     components: { Spinner, PersonnelItem, FooterToolbar, ValidationButtons },
 
     methods: {
-        ...mapActions(['resetPointage', 'addPersonnel', 'resetPersonnel', 'refreshPersonnelGtaPeriodes']),
+        ...mapActions(['resetPointage', 'addPersonnel', 'resetPersonnel', 'refreshPersonnelGtaPeriodes', 'refreshSemaines']),
 
         /**
          * Get the day number and month number 
@@ -257,18 +256,21 @@ export default {
                 this.refreshPersonnelGtaPeriodes(data);
                 this.resetPointage();
                 this.pending.validation = false;
+
+                let urlApi = "gtaPeriode/GET/listWeeksAnalytics?week_start=" + this.$route.params.id + "&week_end=" + this.$route.params.id + "&order_direction=ASC"
+
+                return this.$app.apiGet(urlApi);
+            }).then((data) => {
+                this.refreshSemaines(data);
             }).catch(this.$app.catchError);
         },
-
-        updateSummary(codages){
-            console.table(codages);
-        }
     },
 
     mounted() {
         this.resetPersonnel();
         this.loadDeclarations();
         this.resetPointage();
+
     }
 
 }

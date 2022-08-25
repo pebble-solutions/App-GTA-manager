@@ -86,7 +86,7 @@ import Spinner from '@/components/pebble-ui/Spinner.vue'
 
 import CONFIG from "@/config.json"
 import DateInterval from './components/DateInterval.vue'
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 import date from 'date-and-time';
 
 export default {
@@ -104,11 +104,14 @@ export default {
 
 			currentWeek: null,
 			interval: [0, 0],
-			semaines: null
+			//semaines: null
 		}
 	},
 
 	computed: {
+
+		...mapState(['semaines']),
+
 		/**
 		 * Retourne la semaine sélectionnée
 		 * @returns {Object}
@@ -116,7 +119,7 @@ export default {
 		selectedWeek() {
 			let week=null;
 
-			if(this.semaines) {
+			if(this.semaines.length > 0) {
 				week = this.semaines.find((e) => `${e.year}${e.week}` == this.currentWeek);
 			}
 
@@ -131,7 +134,7 @@ export default {
 	},	
 
 	methods: {
-		...mapActions(['resetPointage']),
+		...mapActions(['resetPointage', 'addSemaines', 'refreshSemaines']),
 
 		/**
 		 * Met à jour les informations de l'utilisateur connecté
@@ -287,21 +290,23 @@ export default {
 
 			return this.$app.apiGet(urlApi)
 			.then( (data) => {
+				let optionsSemaines = {
+					'semaines': data
+				}
 
 				if (options.appendMode == 'unshift') {
-					for (let index in data) {
-						this.semaines.unshift(data[index]);
-					}
+					optionsSemaines['action'] = 'addStart';
+					this.addSemaines(optionsSemaines);
 					this.interval[0] = start;
 				}
 				else if (options.appendMode == 'push') {
-					for (let index in data) {
-						this.semaines.push(data[index]);
-					}
+					optionsSemaines['action'] = 'addEnd';
+					this.addSemaines(optionsSemaines);
 					this.interval[1] = end;
 				}
 				else {
-					this.semaines = data;
+					// this.semaines = data;
+					this.refreshSemaines(data);
 					this.interval[0] = start;
 					this.interval[1] = end;
 				}

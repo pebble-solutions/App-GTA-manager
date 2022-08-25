@@ -25,23 +25,20 @@ export default {
          * Retourne un tableau qui contient un object pour chaque bar
          * l'object contient une couleur et une valeur en %
          * 
-         * @return {Array}     en % ex: 20 pour 20% 
+         * @return {Array}    retourne un tableau d'objet
+         *  - color {String}    une couleur boostrap, exemple success, danger, info ...
+         *  - value {Number}    
+         *  
          */
         stackedBarValue() {
-            // let totalValider = (this.semaine.valider*100) / this.semaine.total;
-            // let totalRejeter = (this.semaine.rejeter*100) / this.semaine.total;
-            // let rest = 100 - (totalValider + totalRejeter);
-
             return [
                 {
                     'color' : "success", 
-                    // 'value' : totalValider.toFixed(0),
                     'value' : this.semaine.valider
                 },
                 {
                     'color' : "danger",
                     'value' : this.semaine.rejeter
-                    // 'value' : totalRejeter.toFixed(0),
                 },
                 {
                     'color' : "warning",
@@ -67,6 +64,6 @@ export default {
                 return this.semaine.total + ' Pointage'
             }
         }
-    }
+    },
 }
 </script>

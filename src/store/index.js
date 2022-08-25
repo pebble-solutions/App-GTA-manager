@@ -10,6 +10,7 @@ export default createStore({
 		tmpElement: null,
 		pointageSelected: [],
 		personnelsDeclarations: [],
+		semaines: []
 	},
 	getters: {
 		activeStructure(state) {
@@ -215,6 +216,37 @@ export default createStore({
 					}
 				}
 			});
+		},
+
+		/**
+		 * Rempplace, ajoute a la fin ou au debut du tableau les semaines analytics
+		 * @param {Object} state Le state de vueX
+		 * @param {Array} optionsSemaines 
+		 * 		- semaines {Array}			Collection de semaines analytics
+		 * 		- action {String} 			Action a faire sur le tableau Ajout au debut ou a la fin / remplace
+		 */
+		setSemaines(state, optionsSemaines) {
+			if(optionsSemaines.action == "addStart") {
+				for (let index in optionsSemaines.semaines) {
+					state.semaines.unshift(optionsSemaines.semaines[index]);
+				}
+			} else if (optionsSemaines.action == 'addEnd'){
+				for (let index in optionsSemaines.semaines) {
+					state.semaines.push(optionsSemaines.semaines[index]);
+				}
+			} else {
+				if(state.semaines.length > 0) {
+					for (let index in optionsSemaines.semaines) {
+						let findIndex = state.semaines.findIndex(s => s.week == optionsSemaines.semaines[index].week);
+	
+						if(findIndex > -1) {
+							state.semaines[findIndex] = optionsSemaines.semaines[index];
+						}
+					}
+				} else {
+					state.semaines = optionsSemaines.semaines
+				}
+			}
 		}
 	},
 	actions: {
@@ -378,8 +410,35 @@ export default createStore({
 		 */
 		refreshPersonnelGtaPeriodes(context, gta_periodes) {
 			context.commit('personnel_gta_periodes', gta_periodes);
-		}
+		},
 
+		/**
+		 * Ajout au debut ou a la fin du tableau semaines en fonction de l'action défini
+		 * @param {Object} context Instance vueX
+		 * @param {Array} payload 
+		 * 		- action	addStart , addEnd
+		 * 		- semaines	Liste des semaine a ajouter
+		 */
+		addSemaines(context, payload) {
+			let semaines = payload.semaines;
+
+			if(payload.action === 'addStart') {
+				context.commit('setSemaines', {semaines, action : 'addStart'});
+			} else if(payload.action === 'addEnd') {
+				context.commit('setSemaines', {semaines, action : 'addEnd'});
+			} else {
+				throw new Error(`La mutation ${payload.action} n'existe pas.`);
+			}
+		},
+
+		/**
+		 * Met à jour semaines
+		 * @param {Object} context Instance VueX
+		 * @param {Array} semaines Collection de semaines analytics
+		 */
+		refreshSemaines(context, semaines) {
+			context.commit('setSemaines', {semaines, action : 'refresh'})
+		}
 
 	},
 	modules: {
