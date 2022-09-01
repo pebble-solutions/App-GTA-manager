@@ -25,7 +25,7 @@
 
 			<AppMenu v-if="semaines">
 				<Spinner v-if="pending.moreWeeks"></Spinner>
-				<AppMenuItem id="btnBefore" button-style="btn-secondary" @click="getWeeks('before', '#btnBefore')" v-else>
+				<AppMenuItem id="btnBefore" button-style="btn-light text-primary" @click="getWeeks('before', '#btnBefore')" v-else>
 					<i class="bi bi-chevron-double-up d-block"></i>
 					Semaine précédente
 				</AppMenuItem>
@@ -35,7 +35,7 @@
 				</AppMenuItem>
 
 				<Spinner v-if="pending.moreWeeks"></Spinner>
-				<AppMenuItem id="btnAfter" button-style="btn-secondary" @click="getWeeks('after', '#btnAfter')" v-else>
+				<AppMenuItem id="btnAfter" button-style="btn-light text-primary" @click="getWeeks('after', '#btnAfter')" v-else>
 						Semaine suivante
 						<i class="bi bi-chevron-double-down d-block"></i>
 				</AppMenuItem>
