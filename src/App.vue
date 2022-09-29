@@ -174,6 +174,8 @@ export default {
 				.then(() => {
 					this.$router.push('/week/'+currentWeek);
 				});
+
+				this.loadGtaCodages();
 			}
 		},
 
@@ -313,6 +315,20 @@ export default {
 				this.pending[options.pending] = false;
 			})
 			.catch(this.$app.catchError);
+		},
+
+
+		/**
+		 * Charge les GtaCodages dans le store
+		 */
+		loadGtaCodages() {
+			this.pending.codage = true;
+
+			this.$app.apiGet('gtaCodage/GET/list')
+			.then((data) => {
+				this.$store.commit('gta_codages', data);
+			})
+			.catch(this.$app.catchError)
 		}
 	},
 

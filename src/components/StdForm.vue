@@ -31,12 +31,12 @@
             <h4>Pause</h4>
             
             <div>
-                <button class="btn btn-outline-primary btn-sm" v-if="!showBreak" @click="showBreak = true">
+                <button class="btn btn-outline-primary btn-sm" type="button" v-if="!showBreak" @click="showBreak = true">
                     <i class="bi bi-plus-circle"></i>
                     Ajouter           
                 </button>
 
-                <button class="btn btn-outline-danger btn-sm" v-else @click="hideShowBreak()">
+                <button class="btn btn-outline-danger btn-sm" type="button" v-else @click="hideShowBreak()">
                     <i class="bi bi-trash"></i>
                     Supprimer
                 </button>

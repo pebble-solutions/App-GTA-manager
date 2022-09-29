@@ -1,5 +1,5 @@
 <template>
-    <AppModal title="Modifier le pointage" :close-btn="true" :submit-btn="true" @modal-hide="routeToBack()" @submit="recordEditPointage()">
+    <AppModal title="Modifier le pointage" :close-btn="true" :submit-btn="true" @modal-hide="routeToBack()" @submit="recordEditPointage()" :pending="pending.periode">
         <div v-if="std">
             <StdForm :std="tmpStd" />
         </div>
@@ -36,6 +36,9 @@ export default {
                 dfp_date: null,
                 dfp_time: null,
                 gta_declarations: []
+            },
+            pending: {
+                periode: false
             }
         }
     },
@@ -155,6 +158,8 @@ export default {
                 query.gta_declarations = JSON.stringify(this.tmpStd.gta_declarations)
             }
 
+            this.pending.periode = true;
+
             this.$app.apiPost(urlApi, query)
             .then(() => {      
                 let urlApiCounters = "structureTempsDeclaration/GET/listDeclarations"
@@ -171,7 +176,10 @@ export default {
                 this.refreshPersonnel(dataByPersonnel.personnels);
                 this.$router.push('/week/'+ this.$route.params.id);
             })
-            .catch(this.$app.catchError);
+            .catch(this.$app.catchError)
+            .finally(() => {
+                this.pending.periode = false;
+            });
         },
 
         /**

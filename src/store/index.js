@@ -10,7 +10,8 @@ export default createStore({
 		tmpElement: null,
 		pointageSelected: [],
 		personnelsDeclarations: [],
-		semaines: []
+		semaines: [],
+		gta_codages: []
 	},
 	getters: {
 		activeStructure(state) {
@@ -247,6 +248,17 @@ export default createStore({
 					state.semaines = optionsSemaines.semaines
 				}
 			}
+		},
+
+
+		/**
+		 * Met à jour la liste des GtaCodages dans le store.
+		 * 
+		 * @param {Object} state Le state VueX
+		 * @param {Array} data La liste des GtaCodage
+		 */
+		gta_codages(state, data) {
+			state.gta_codages = data;
 		}
 	},
 	actions: {
@@ -438,6 +450,19 @@ export default createStore({
 		 */
 		refreshSemaines(context, semaines) {
 			context.commit('setSemaines', {semaines, action : 'refresh'})
+		},
+
+		/**
+		 * Trouve le libellé d'un GtaCodage depuis son ID.
+		 * 
+		 * @param {Object} context Instance VueX
+		 * @param {Number} codage_id L'id du codage à trouver
+		 * 
+		 * @returns {String}
+		 */
+		getCodageLabelFromId(context, codage_id) {
+			let codage = context.state.gta_codages.find(e => e.id === codage_id);
+			return typeof codage !== 'undefined' ? codage.nom : 'Sans-nom';
 		}
 
 	},

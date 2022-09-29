@@ -20,12 +20,12 @@
         <div v-show="addInfos" class="py-2" >
             <div class="input-group" >
                 <select class="form-select" id="inputGroupSelect04" v-model="infosToAdd.gta__codage_id" aria-label="Example select with button addon">
-                    <option class="text-truncate" v-for="gta_codage in gtaCodagesList" :key="'gtacodage-'+gta_codage.id" :value="gta_codage.id">
+                    <option class="text-truncate" v-for="gta_codage in gta_codages" :key="'gtacodage-'+gta_codage.id" :value="gta_codage.id">
                         {{gta_codage.nom}}
                     </option>
                 </select>
 
-                <input type="number" class="form-control" v-model="infosToAdd.qte_retenue">
+                <input type="number" class="form-control" @keydown.enter.prevent="actionAddInfos()" v-model="infosToAdd.qte_retenue">
 
                 <button type="button" class="btn btn-success" @click.prevent="actionAddInfos()">
                     <i class="bi bi-check"></i>
@@ -33,41 +33,18 @@
             </div>
         </div>
 
-        <div v-for="declaration in tmpDeclarations" :key="declaration.id">
-            <div class="border-dashed d-flex justify-content-between align-items-center my-2" v-if="declaration.correction === null && declaration.qte != 0.00 || declaration.correction === 'OUI' && declaration.qte_retenue != 0.00 && declaration.qte_retenue !== null || declaration.corretion === 'NON' && declaration.qte != 0.00">
-                <label for="qt-row-1 text-truncate" :title="getCodageNom(declaration.gta__codage_id)">{{getCodageNom(declaration.gta__codage_id)}}</label>
-
-                <div class="sizeBoxQte">
-                    <div class="input-group input-group-sm ms-auto">
-                        <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="updateQte('remove', declaration)">
-                            <i class="bi bi-dash-lg"></i>
-                        </button>
-                        
-                        <input type="text" class="form-control text-center" :value="declaration.qte_retenue ? declaration.qte_retenue : declaration.qte" id="qt-row-1" >
-
-                        <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="updateQte('add', declaration)">
-                            <i class="bi bi-plus-lg"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <DeclarationFormItem v-for="declaration in tmpDeclarations" :key="declaration.id" :declaration="declaration" @qte-change="changeDeclarationQte($event, declaration)" />
     </div>
 </template>
 
-<style lang="scss">
-    .sizeBoxQte {
-        width: 120px;
-    }
-</style>
-
 <script>
 import AlertMessage from '@/components/pebble-ui/AlertMessage.vue';
+import DeclarationFormItem from './DeclarationFormItem.vue';
+import { mapState } from 'vuex';
 
 export default {
     props: {
         gta_declarations: Object,
-        gta_codages: Object,
     },
 
     data() {
@@ -80,12 +57,15 @@ export default {
             },
             error: {
                 addInfos : null,
-            },
-            gtaCodagesList: null,
+            }
         }
     },
 
-    components: {AlertMessage},
+    components: { AlertMessage, DeclarationFormItem },
+
+    computed: {
+        ...mapState(['gta_codages'])
+    },
 
     methods: {
         /**
@@ -110,50 +90,24 @@ export default {
         },
 
         /**
-         * Retourn le nom du gta codages spécifique a son id
-         * @param {integer} id l'id du gta codages recherché
+         * Met à jour la quantité retenue.
          * 
-         * @return {String}
+         * @param {Number} value Valeur à enregistrer
+         * @param {Object} declaration Déclaration sur laquelle affecter la valeur
          */
-        getCodageNom(id) {
-            let gtaCodage = this.gta_codages.find((e) => e.id === id);
-
-            return gtaCodage.nom;
-        },
-
-        /**
-         * Update the qte result of the declaration,
-         * - add        ajout +1
-         * - remove     remove -1
-         * @param {Object} declaration 
-         */
-        updateQte(action, declaration) {
-            if(action === "add") {
-                declaration.qte_retenue ? declaration.qte_retenue++ : declaration.qte++;
-            } else {
-                declaration.qte_retenue ? declaration.qte_retenue-- : declaration.qte--;
-            }
-        },
-
-        /***
-         * Retourn toute la liste des gta codage
-         * 
-         * @return {Array}
-         */
-        getGtaCodagelist() {
-            let apiUrl = "gtaCodage/GET/list";
-
-            this.$app.apiGet(apiUrl, {})
-            .then((data) => {
-                this.gtaCodagesList = data;
-            }).catch(this.$app.catchError);
+        changeDeclarationQte(value, declaration) {
+            declaration.qte_retenue = value;
         }
     },
     
     mounted() {
         this.tmpDeclarations = this.gta_declarations;
 
-        this.getGtaCodagelist();
+        this.tmpDeclarations.forEach(declaration => {
+            if (declaration.qte_retenue === null || typeof declaration.qte_retenue === 'undefined' || declaration.qte_retenue === '') {
+                declaration.qte_retenue = declaration.qte;
+            }
+        });
     }
 }
 </script>
