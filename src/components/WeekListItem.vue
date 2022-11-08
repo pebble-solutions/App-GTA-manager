@@ -33,16 +33,17 @@ export default {
         stackedBarValue() {
             return [
                 {
-                    'color' : "success", 
-                    'value' : this.semaine.valider
+                    color: "success", 
+                    value: this.semaine.valider
                 },
                 {
-                    'color' : "danger",
-                    'value' : this.semaine.rejeter
+                    color: "danger",
+                    value: this.semaine.rejeter
                 },
                 {
-                    'color' : "warning",
-                    'value' : this.semaine.total - (this.semaine.valider + this.semaine.rejeter)
+                    color: "warning",
+                    value: this.semaine.total - (this.semaine.valider + this.semaine.rejeter),
+                    displayValue: false
                 }
             ];
         }
@@ -59,9 +60,9 @@ export default {
          */
         allPointages() {
             if(this.semaine.total > 1 ) {
-                return this.semaine.total + ' Pointages';
+                return this.semaine.total + ' Déclarations';
             } else {
-                return this.semaine.total + ' Pointage'
+                return this.semaine.total + ' Déclaration'
             }
         }
     },

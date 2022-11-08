@@ -1,6 +1,5 @@
 <template>
     <tr class="text-center" >
-        <PersonnelBadge :personnel="personnel" :rowspan="rowspan" :id="id" v-if="id == 0"> </PersonnelBadge>
 
         <td class="text-start">
             <span v-if="frSummary[resume]">{{frSummary[resume]}}</span>
@@ -18,7 +17,6 @@
 </template>
 
 <script>
-import PersonnelBadge from './PersonnelBadge.vue';
 
 
 export default {
@@ -55,10 +53,6 @@ export default {
         }
     },
 
-    components: {
-        PersonnelBadge
-    },
-
     methods: {
         /**
          * Renvoi les valeurs summary calculé sur un weekend
@@ -93,7 +87,7 @@ export default {
                 let codage = this.gta_codages.find(e => e.nom == summaryKey);
 
                 if(codage) {
-                    if(summaryDay[apiDate]['gta_declarations'].length != 0) {
+                    if(summaryDay[apiDate]['gta_declarations']) {
                         return this.twoDigitAfterComma(summaryDay[apiDate]['gta_declarations'][codage.id]);
                     }
                 }

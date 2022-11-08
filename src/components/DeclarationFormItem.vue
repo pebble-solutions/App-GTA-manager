@@ -1,8 +1,9 @@
 <template>
-    <div class="border-dashed d-flex justify-content-between align-items-center my-2" v-if="declaration.correction === null && declaration.qte != 0.00 || declaration.correction === 'OUI' && declaration.qte_retenue != 0.00 && declaration.qte_retenue !== null || declaration.corretion === 'NON' && declaration.qte != 0.00">
+    <div class="list-group-item d-flex justify-content-between align-items-center px-0" v-if="declaration.correction === null && declaration.qte != 0.00 || declaration.correction === 'OUI' && declaration.qte_retenue != 0.00 && declaration.qte_retenue !== null || declaration.corretion === 'NON' && declaration.qte != 0.00">
+
         <label :for="'declaration-qte-input-'+declaration.id" :title="codage_label">{{codage_label}}</label>
 
-        <div class="sizeBoxQte">
+        <div class="box-qte">
             <div class="input-group input-group-sm ms-auto">
                 <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="incrementQte(-1)">
                     <i class="bi bi-dash-lg"></i>
@@ -19,7 +20,7 @@
 </template>
 
 <style lang="scss" scoped>
-    .sizeBoxQte {
+    .box-qte {
         width: 120px;
     }
 </style>
@@ -65,6 +66,7 @@ export default {
 
     mounted() {
         this.value = this.declaration.qte_retenue === null || typeof this.declaration.qte_retenue === 'undefined' || this.declaration.qte_retenue === '' ? this.declaration.qte : this.declaration.qte_retenue;
+        if (!this.value) this.value = 0;
 
         this.getCodageLabelFromId(this.declaration.gta__codage_id)
         .then((label) => {

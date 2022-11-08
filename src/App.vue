@@ -134,7 +134,7 @@ export default {
 	},	
 
 	methods: {
-		...mapActions(['resetPointage', 'addSemaines', 'refreshSemaines']),
+		...mapActions(['resetPeriodeSelection', 'addSemaines', 'refreshSemaines', 'resetSemaines']),
 
 		/**
 		 * Met à jour les informations de l'utilisateur connecté
@@ -169,6 +169,7 @@ export default {
 				this.currentWeek = currentWeek;
 				let start = this.weekCalcul(this.currentWeek, 'less', 5);
 				let end = this.weekCalcul(this.currentWeek, 'add', 2);
+
 
 				this.loadWeeks(start, end)
 				.then(() => {
@@ -307,6 +308,9 @@ export default {
 					this.interval[1] = end;
 				}
 				else {
+					if (options.appendMode == 'replace') {
+						this.resetSemaines();
+					}
 					// this.semaines = data;
 					this.refreshSemaines(data);
 					this.interval[0] = start;

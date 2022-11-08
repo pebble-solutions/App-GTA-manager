@@ -1,29 +1,66 @@
 /**
- * Calcule une durée entre 2 date
+ * Retourne la durée entre deux date au format H:MM
+ * 
  * @param {String} sd       
  * @param {String} sf 
  * 
- * @return {String}         format hours : minutes
+ * @return {String}
  */
 export function calculateDiffDate(sd, sf) {
-    let dd = new Date(sd);
-    let df = new Date(sf);
+    let dd = new Date(sqlDateToIso(sd));
+    let df = new Date(sqlDateToIso(sf));
 
-    let diff = Math.abs(dd - df);
+    let diff = df - dd;
 
-    let minutes = Math.floor((diff / (1000 * 60)) % 60),
-        hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    if (diff < 0) diff = 0;
+
+    return numberToTimeString(diff);
+}
+
+/**
+ * Convertie un horaire sur deux digit (ex 5 => 05)
+ * @param {number|string} time Durée à convertir
+ * @returns {string}
+ */
+export function padTime(time) {
+    if (typeof time !== 'string') {
+        time = time.toString();
+    }
+
+    return time.padStart(2, "0");
+}
+
+/**
+ * Transforme une date SQL en une date ISO8601
+ * @param {String} date Date SQL à transformer
+ * @returns {String}
+ */
+export function sqlDateToIso(date) {
+    if (date) {
+        date = date.replace(/(\d{4}-\d{2}-\d{2})\s/, '$1T');
+        return date;
+    }
+    return null;
+}
+
+/**
+ * Convertie un nombre entier ou flottant en durée.
+ * Ex : 65 => 1:05
+ * 
+ * @param {number} time Nombre à convertir
+ * @returns {string}
+ */
+export function numberToTimeString(time) {
+    let minutes = Math.floor((time / (1000 * 60)) % 60),
+        hours = Math.floor((time / (1000 * 60 * 60)) % 24);
 
     if(!minutes) {
-        minutes = '0';
+        minutes = 0;
     }
 
-    if(!hours) {
-        hours = '0';
+    if(!hours) {    
+        hours = 0;
     }
 
-    hours = (hours < 10) ? "0" + hours : hours;
-    minutes = (minutes < 10) ? "0" + minutes : minutes;
-
-    return hours + ":" + minutes; 
+    return hours + ":" + padTime(minutes); 
 }

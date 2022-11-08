@@ -8,7 +8,7 @@ export default createStore({
 		elements: [],
 		openedElement: null,
 		tmpElement: null,
-		pointageSelected: [],
+		periodes_selected: [],
 		personnelsDeclarations: [],
 		semaines: [],
 		gta_codages: []
@@ -133,23 +133,23 @@ export default createStore({
 		},
 
 		/**
-		 * Ajout ou retire un pointage du tableau  pointageSelected
+		 * Ajout ou retire un pointage du tableau  periodes_selected
 		 * @param {Object} state le state de l'instance vuex
 		 * @param {Object} optionsPointage 
 		 * 		- pointage {Object}		le pointage selectionné
 		 * 		- action {String}		l'action a faire sur le tableau, ajouter/retirer/reset
 		 */
-		pointage_selected(state, optionsPointage) {
-			if(optionsPointage.action == 'add') {
-				state.pointageSelected.push(optionsPointage.pointage);
-			} else if (optionsPointage.action == 'remove') {
-				let index = state.pointageSelected.findIndex(p => p.id === optionsPointage.pointage.id);
+		periodes_selected(state, optionsPeriode) {
+			if(optionsPeriode.action == 'add') {
+				state.periodes_selected.push(optionsPeriode.pointage);
+			} else if (optionsPeriode.action == 'remove') {
+				let index = state.periodes_selected.findIndex(p => p.id === optionsPeriode.pointage.id);
 
 				if(index !== -1) {
-					state.pointageSelected.splice(index, 1);
+					state.periodes_selected.splice(index, 1);
 				}
 			} else {
-				state.pointageSelected = [];
+				state.periodes_selected = [];
 			}
 		},
 
@@ -185,6 +185,9 @@ export default createStore({
 						for (const key in personnel) {
 							state.personnelsDeclarations[index][key] = personnel[key];
 						}
+					}
+					else {
+						state.personnelsDeclarations.push(personnel)
 					}
 				});
 			}
@@ -235,13 +238,19 @@ export default createStore({
 				for (let index in optionsSemaines.semaines) {
 					state.semaines.push(optionsSemaines.semaines[index]);
 				}
-			} else {
+			} else if (optionsSemaines.action == 'replace') {
+				state.semaines = optionsSemaines.semaines;
+			}
+			else {
 				if(state.semaines.length > 0) {
 					for (let index in optionsSemaines.semaines) {
 						let findIndex = state.semaines.findIndex(s => s.week == optionsSemaines.semaines[index].week);
 	
 						if(findIndex > -1) {
-							state.semaines[findIndex] = optionsSemaines.semaines[index];
+							let newSemaine = optionsSemaines.semaines[index];
+							for (const k in newSemaine) {
+								state.semaines[findIndex][k] = newSemaine[k];
+							}
 						}
 					}
 				} else {
@@ -354,29 +363,29 @@ export default createStore({
 		},
 
 		/**
-		 * Ajout un pointage a la liste des pointages sélectionnés
+		 * Ajout une période a la liste des periodes sélectionnées
 		 * @param {Object} context Instance vuex
 		 * @param {Object} pointage pointage a ajouter
 		 */
-		addPointage(context, pointage) {
-			context.commit('pointage_selected', {pointage, action : 'add'});
+		addPeriodeToSelection(context, pointage) {
+			context.commit('periodes_selected', {pointage, action : 'add'});
 		},
 
 		/**
-		 * Remove un pointage a la liste des pointages sélectionnés
+		 * Retire une période a la liste des periodes sélectionnées
 		 * @param {Object} context Instance vRemove	 
 		 * @param {Object} pointage pointage a ajouter
 		 */
-		removePointage(context, pointage) {
-			context.commit('pointage_selected', {pointage, action : 'remove'});
+		removePeriodeFromSelection(context, pointage) {
+			context.commit('periodes_selected', {pointage, action : 'remove'});
 		},
 
 		/**
-		 * Remove un pointage a la liste des pointages sélectionnés
+		 * Réinitialise la liste des periodes sélectionnées
 		 * @param {Object} context Instance vRemove	 
 		 */
-		resetPointage(context) {
-			context.commit('pointage_selected', {action : 'reset'});
+		resetPeriodeSelection(context) {
+			context.commit('periodes_selected', {action : 'reset'});
 		}, 
 
 		/**
@@ -453,6 +462,14 @@ export default createStore({
 		},
 
 		/**
+		 * Vide les semaines chargées
+		 * @param {Object} context Instance VueX
+		 */
+		resetSemaines(context) {
+			context.commit('setSemaines', {semaines: [], action : 'replace'})
+		},
+
+		/**
 		 * Trouve le libellé d'un GtaCodage depuis son ID.
 		 * 
 		 * @param {Object} context Instance VueX
@@ -462,7 +479,7 @@ export default createStore({
 		 */
 		getCodageLabelFromId(context, codage_id) {
 			let codage = context.state.gta_codages.find(e => e.id === codage_id);
-			return typeof codage !== 'undefined' ? codage.nom : 'Sans-nom';
+			return typeof codage !== 'undefined' ? codage.nom : 'Sans-nom ('+codage_id+')';
 		}
 
 	},

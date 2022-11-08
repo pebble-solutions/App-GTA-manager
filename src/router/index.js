@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Validation from '../views/Validation.vue'
+import Week from '../views/Week.vue'
 import Home from '../views/Home.vue'
 
 const routes = [
@@ -11,12 +11,12 @@ const routes = [
   {
     path: '/week/:id',
     name: 'Validation',
-    component: Validation,
+    component: Week,
     children: [
       {
-        path:'editpointage/:idPeriode/',
+        path:'periode/:idPeriode/',
         name: "EditPointage",
-        component: () => import('../views/EditPointage.vue'),
+        component: () => import('../views/Periode.vue'),
       }
     ]
   },

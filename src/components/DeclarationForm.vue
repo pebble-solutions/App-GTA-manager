@@ -1,8 +1,7 @@
 <template>
-    <div>
-        <hr>
-        <div class="mt-2 d-flex justify-content-between align-items-center">
-            <h4>Infos déclarées</h4>
+    <div class="my-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="card-title">Déclarations</h4>
 
             <button v-if="!addInfos" type="button" class="btn btn-outline-primary btn-sm" @click="addInfos = !addInfos">
                 <i class="bi bi-plus-circle"></i>
@@ -19,21 +18,23 @@
 
         <div v-show="addInfos" class="py-2" >
             <div class="input-group" >
-                <select class="form-select" id="inputGroupSelect04" v-model="infosToAdd.gta__codage_id" aria-label="Example select with button addon">
+                <select class="form-select" id="inputGroupSelect04" v-model="newDeclaration.gta__codage_id" aria-label="Example select with button addon">
                     <option class="text-truncate" v-for="gta_codage in gta_codages" :key="'gtacodage-'+gta_codage.id" :value="gta_codage.id">
                         {{gta_codage.nom}}
                     </option>
                 </select>
 
-                <input type="number" class="form-control" @keydown.enter.prevent="actionAddInfos()" v-model="infosToAdd.qte_retenue">
+                <input type="number" class="form-control" @keydown.enter.prevent="addDeclaration()" v-model="newDeclaration.qte_retenue">
 
-                <button type="button" class="btn btn-success" @click.prevent="actionAddInfos()">
+                <button type="button" class="btn btn-success" @click.prevent="addDeclaration()">
                     <i class="bi bi-check"></i>
                 </button>
             </div>
         </div>
 
-        <DeclarationFormItem v-for="declaration in tmpDeclarations" :key="declaration.id" :declaration="declaration" @qte-change="changeDeclarationQte($event, declaration)" />
+        <div class="list-group list-group-flush">
+            <DeclarationFormItem v-for="declaration in gta_declarations" :key="declaration.id" :declaration="declaration" @qte-change="changeDeclarationQte($event, declaration)" />
+        </div>
     </div>
 </template>
 
@@ -44,14 +45,14 @@ import { mapState } from 'vuex';
 
 export default {
     props: {
-        gta_declarations: Object,
+        gta_declarations: Array,
     },
 
     data() {
         return {
             addInfos: false,
             tmpDeclarations: [],
-            infosToAdd: {
+            newDeclaration: {
                 gta__codage_id: null,
                 qte_retenue: null
             },
@@ -70,22 +71,20 @@ export default {
     methods: {
         /**
          * Ajout une nouvelle declaration a la list des déclarations
-         * et reset l'object this.infosToAdd
+         * et reset l'object this.newDeclaration
          */
-        actionAddInfos() {
-            if(!this.infosToAdd.gta__codage_id || !this.infosToAdd.qte_retenue) {
+        addDeclaration() {
+            if(!this.newDeclaration.gta__codage_id || !this.newDeclaration.qte_retenue) {
                 this.error.addInfos = true;
             } else {
-                let key= Object.keys(this.tmpDeclarations).length;
-                let copyobj = Object.assign({}, this.infosToAdd);
+                let declaration = JSON.parse(JSON.stringify(this.newDeclaration));
+                declaration.correction = 'OUI';
+                declaration.qte = declaration.qte_retenue;
 
-                copyobj['correction'] = 'OUI';
-                copyobj['qte'] = copyobj['qte_retenue'];
+                this.$emit('add-declaration', declaration);
                 
-                this.tmpDeclarations[key] = copyobj;
-                
-                this.infosToAdd.nom = null;
-                this.infosToAdd.qte_retenue = null;
+                this.newDeclaration.nom = null;
+                this.newDeclaration.qte_retenue = null;
             }
         },
 
@@ -97,17 +96,12 @@ export default {
          */
         changeDeclarationQte(value, declaration) {
             declaration.qte_retenue = value;
+            declaration.correction = "OUI";
         }
     },
     
     mounted() {
         this.tmpDeclarations = this.gta_declarations;
-
-        this.tmpDeclarations.forEach(declaration => {
-            if (declaration.qte_retenue === null || typeof declaration.qte_retenue === 'undefined' || declaration.qte_retenue === '') {
-                declaration.qte_retenue = declaration.qte;
-            }
-        });
     }
 }
 </script>

@@ -1,5 +1,10 @@
 <template>
-    <tbody class="table-group-divider">
+    <tbody class="table-group-divider table-personnel">
+
+        <tr v-if="personnel" class="table-secondary">
+            <td colspan="9"><PersonnelBadge :personnel="personnel"></PersonnelBadge></td>
+        </tr>
+
         <template v-if="summary.length != 0">
             <Summary v-for="(resume, index) in summary" 
                 :key="'resume-'+index"
@@ -13,48 +18,17 @@
             ></Summary>
         </template>
 
-        <tr v-if="personnel" class="text-center">
-            <PersonnelBadge v-if="summary.length == 0" :personnel="personnel" :rowspan="rowspan"> </PersonnelBadge>
-            <td class="col-day" v-else></td>
+        <tr v-if="personnel" class="text-center personnel-periodes">
 
-            <td class="col-day" v-if="summary.length == 0"></td>
+            <td class="col-day"></td>
 
             <td class="col-day" v-for="day in weekDays" :key="'personnel-'+personnel.id+'-'+day.getDate()">
-                <template v-for="periode in getPeriodesFromDate(personnel.gta_periodes, day)" :key="'periode-'+periode.id">
-                    <template v-if="periode.structure_temps_declarations.length <= 0 && periode.gta_declarations.length <= 0">
-                        <div class="card border border-2">
-                            <div class="card-body text-center">
-                                Periode Vide
-
-                                <button class="btn btn-danger">
-                                    <i class="bi bi-trash"></i>
-                                    Supprimer
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template v-else>
-                        <template v-if="periode.structure_temps_declarations.length > 0">
-                            <PointageCard   :periode="periode" 
-                                            :pointage="std"
-                                            :gta_codages="gta_codages"
-                                            :personnel="personnel"
-
-                                            v-for="std in periode.structure_temps_declarations"
-                                            :key="'pointage-'+periode.id+'-'+std.id">
-                            </PointageCard>
-                        </template>
-
-                        <template v-else>
-                            <PointageCard   :periode="periode"
-                                            :pointage={}
-                                            :gta_codages="gta_codages"
-                                            :personnel="personnel">
-                            </PointageCard>
-                        </template>
-                    </template> 
-                </template>
+                <PeriodeCard 
+                    v-for="periode in getPeriodesFromDate(personnel.gta_periodes, day)" 
+                    :key="'periode-'+periode.id"
+                    :periode="periode"
+                    :personnel="personnel"
+                    @change="$emit('change')" />
             </td>
 
             <td class="col-day"></td>
@@ -74,17 +48,18 @@
 
 <script>
 import Summary from '@/components/Summary.vue';
-import PointageCard from '@/components/PointageCard.vue';
-//import GtaDeclarationsList from '@/components/GtaDeclarationsList.vue';
 import PersonnelBadge from './PersonnelBadge.vue';
+import { mapState } from 'vuex';
+import PeriodeCard from './PeriodeCard.vue';
 
 export default {
     props: {
         personnel: Object,
         weekDays: Array,
-        gta_codages: Object,
         semaine: Object
     },
+
+    emits: ['change'],
 
     data() {
         return {
@@ -93,12 +68,14 @@ export default {
     },
 
     computed: {
+        ...mapState(['gta_codages']),
+
         summary() {
             return this.getSummary();
         }
     },
 
-    components: {Summary, PointageCard, PersonnelBadge},
+    components: { Summary, PersonnelBadge, PeriodeCard },
 
     methods: {
         /**

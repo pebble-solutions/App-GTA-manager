@@ -1,38 +1,32 @@
 <template>
     <Spinner v-if="pending.week"></Spinner>
-    <div class="table-responsive" v-else>
-        <table class="table table-bordered table-sm fs-7">
-            <thead class="align-middle text-center table-secondary">
-                <tr>
-                    <th class="col-md-2">Personnel</th>
-                    <th></th>
+    
+    <div class="table-responsive" v-else-if="!pending.week && personnelsDeclarations.length">
 
-                    <th class="col-day" v-for="day in weekDays" :key="'day-header-'+day.getDate()">
-                        <div>{{day.toLocaleDateString('fr-FR', {weekday: 'long'})}}</div>
-                        <div>{{dateToDayMonth(day)}}</div>
-                    </th>
+        <WeekHeader :week-days="weekDays" :semaine="semaine"></WeekHeader>
 
-                    <th class="col-day">
-                        <div>S{{semaine.week}}</div>
-                    </th>
-                </tr>
-            </thead>
-
-            <PersonnelItem v-for="personnel in personnelsDeclarations" :key="'personnel-'+personnel.id"
+        <table class="table table-bordered table-sm fs-7" id="week-personnels-table">
+            <PersonnelWeekRow 
+                v-for="personnel in personnelsDeclarations" 
+                :key="'personnel-'+personnel.id"
                 :personnel="personnel"
                 :weekDays="weekDays"
-                :gta_codages="gta_codages"
                 :semaine="semaine"
-            ></PersonnelItem>
+                @change="resizeHeader()"
+            ></PersonnelWeekRow>
         </table>
     </div>
 
-    <FooterToolbar v-if="pointageSelected.length">
+    <div v-else class="py-3 lead text-secondary text-center">
+        <div><i class="bi bi-file-x"></i></div>
+        <div>Pas de déclarations sur cette semaine</div>
+    </div>
+
+    <FooterToolbar v-if="periodes_selected.length" className="bg-dark text-light">
         <ValidationButtons cancelLabel="Refuser" :pending="pending.validation" @confirm="actionForSelection('valider')" @cancel="actionForSelection('refuser')" />
     </FooterToolbar>
 
-    <router-view :gta_codages="gta_codages"
-                
+    <router-view
                 @update-std="updateStds" 
                 @update-gta_declarations="updateGtaDeclarations"></router-view>
 </template>
@@ -49,19 +43,20 @@
     }
 
     .col-day {
-        max-width: 150px;
-        min-width: 150px;
-        width: 150px;
+        max-width: 11.11%;
+        min-width: 11.11%;
+        width: 11.11%;
     }
 
 </style>
 
 <script>
 import Spinner from '@/components/pebble-ui/Spinner.vue';
-import PersonnelItem from '@/components/PersonnelItem.vue';
+import PersonnelWeekRow from '@/components/PersonnelWeekRow.vue';
 import { mapActions, mapState } from 'vuex';
 import FooterToolbar from '../components/pebble-ui/toolbar/FooterToolbar.vue';
 import ValidationButtons from '../components/pebble-ui/toolbar/ValidationButtons.vue';
+import WeekHeader from '../components/WeekHeader.vue';
 
 export default {
     inheritAttrs: false,
@@ -72,7 +67,6 @@ export default {
 
     data() {
         return {
-            gta_codages: [],
             week: ['Monday', 'tuesday', 'wednesday', 'thursday', 'Friday', 'Saturday', 'Sunday'],
             resumePointageOptions: ['Total heures', 'Heures normales', 'Heures nuit', 'Prime A', 'Alerts'],
             pending: {
@@ -95,7 +89,7 @@ export default {
 
     computed: {
 
-        ...mapState(['pointageSelected', 'login', 'personnelsDeclarations', 'semaines']),
+        ...mapState(['periodes_selected', 'login', 'personnelsDeclarations', 'semaines', 'gta_codages']),
 
         /**
          * Retourne la liste des jours entre dd et df.
@@ -131,14 +125,14 @@ export default {
         semaine() {
             this.resetPersonnel();
             this.loadDeclarations();
-            this.resetPointage();
+            this.resetPeriodeSelection();
         }
     },
 
-    components: { Spinner, PersonnelItem, FooterToolbar, ValidationButtons },
+    components: { Spinner, PersonnelWeekRow, FooterToolbar, ValidationButtons, WeekHeader },
 
     methods: {
-        ...mapActions(['resetPointage', 'addPersonnel', 'resetPersonnel', 'refreshPersonnelGtaPeriodes', 'refreshSemaines']),
+        ...mapActions(['resetPeriodeSelection', 'refreshPersonnel', 'resetPersonnel', 'refreshPersonnelGtaPeriodes', 'refreshSemaines']),
 
         /**
          * Get the day number and month number 
@@ -166,11 +160,7 @@ export default {
                 group_by_personnel: true
             })
             .then( (data) => {
-                data.personnels.forEach( (personnel) => {
-                    this.addPersonnel(personnel);
-                });
-
-                this.gta_codages = data.gta_codages;
+                this.refreshPersonnel(data.personnels);
                 this.pending.week = false;
             })
             .catch(this.$app.catchError);
@@ -243,7 +233,7 @@ export default {
             let listId= [];
             let query = {'personneId' : this.login.primary_personne_physique}
 
-            this.pointageSelected.forEach(pointage => {
+            this.periodes_selected.forEach(pointage => {
                 listId.push(pointage.id);
             });
 
@@ -254,7 +244,7 @@ export default {
             this.$app.apiPost(urlApi, query)
             .then((data) => {
                 this.refreshPersonnelGtaPeriodes(data);
-                this.resetPointage();
+                this.resetPeriodeSelection();
                 this.pending.validation = false;
 
                 let urlApi = "gtaPeriode/GET/listWeeksAnalytics?week_start=" + this.$route.params.id + "&week_end=" + this.$route.params.id + "&order_direction=ASC"
@@ -262,15 +252,62 @@ export default {
                 return this.$app.apiGet(urlApi);
             }).then((data) => {
                 this.refreshSemaines(data);
+
+                let urlApiCounters = "structureTempsDeclaration/GET/listDeclarations";
+
+                return this.$app.apiGet(urlApiCounters, {
+                    'dd': this.semaine.dd,
+                    'df': this.semaine.df,
+                    'group_by_personnel': true
+                });
+            }).then((data) => {
+                this.refreshPersonnel(data.personnels);
             }).catch(this.$app.catchError);
         },
+
+        /**
+         * Met à jour la largeur de chaque colonne du header en fonction des largeurs de colonnes
+         * du tableau principal.
+         */
+        resizeHeader() {
+            let headerWeek = document.getElementById('header-week');
+
+            if (headerWeek) {
+                let headerCols = headerWeek.querySelectorAll('.week-header-col');
+
+                let personnelTable = document.getElementById('week-personnels-table');
+
+                if (personnelTable) {
+                    let tableCols = personnelTable.querySelectorAll('.personnel-periodes td');
+
+                    personnelTable.style.marginTop = headerWeek.offsetHeight+'px';
+    
+                    if (tableCols) {
+                        for (let i=0; i<headerCols.length; i++) {
+                            let val = tableCols[i].offsetWidth+'px';
+                            headerCols[i].style.width = val;
+                            headerCols[i].style.minWidth = val;
+                            headerCols[i].style.maxWidth = val;
+                        }
+                    }
+                }
+        
+            }
+        }
+    },
+
+    updated() {
+        this.resizeHeader();
     },
 
     mounted() {
         this.resetPersonnel();
         this.loadDeclarations();
-        this.resetPointage();
+        this.resetPeriodeSelection();
 
+        window.addEventListener("resize", () => {
+            this.resizeHeader();
+        });
     }
 
 }
