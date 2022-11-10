@@ -1,5 +1,16 @@
 <template>
-    <AppModal title="Modifier la période" :cancel-btn="true" :submit-btn="true" @modal-hide="routeToBack()" @submit="recordPeriode()" :pending="pending.periode">
+    <AppModal title="Modifier la période" :cancel-btn="true" :submit-btn="!gta_periode.valider" @modal-hide="routeToBack()" @submit="recordPeriode()" :pending="pending.periode">
+
+        <div class="mb-2" v-if="gta_periode.valider !== null">
+            <div class="text-center p-1 alert" :class="validationClass">
+                {{textPeriode}}
+            </div>
+            <div class="d-grid">
+                <button class="btn btn-sm btn-outline-secondary" @click.prevent="resetPeriodeValidation">
+                    <i class="bi me-1" :class="{'bi-arrow-counterclockwise' : !pending.periode, 'spinner-border spinner-border-sm' : pending.periode}">
+                    </i> Annuler </button>
+            </div>
+        </div>
 
         <div v-if="removedStd" class="alert alert-secondary">
             <i class="bi bi-trash"></i>
@@ -10,8 +21,10 @@
                 <i class="bi bi-exclamation-triangle-fill"></i> Un pointage est enregistré sur 
                 une période déclarée en absence. Cela semble être incohérent. Vérifiez les informations.
             </div>
-
-            <StdForm :std="std" v-for="std in stds" :key="'std-'+std.id" @delete="deleteStd(std.id)" />
+            
+            <div :class="{'pe-none' : gta_periode.valider !== null }">
+                <StdForm :std="std" v-for="std in stds" :key="'std-'+std.id" @delete="deleteStd(std.id)" @updated="importGtaPeriode()" /> 
+            </div>
 
             <div class="d-grid">
                 <button type="button" class="btn btn-sm btn-outline-primary" v-if="!stds.length" @click.prevent="addStd()"><i class="bi bi-plus-circle"></i> Ajouter un pointage</button>
@@ -22,15 +35,18 @@
             <i class="bi bi-brightness-high"></i> Période d'absence déclarée.
         </div>
 
-        <DeclarationForm 
-            :gta_declarations="gta_declarations" 
-            :gta_codages="gta_codages"
-            
-            @add-declaration="addDeclaration" />
+        <div :class="{'pe-none' : gta_periode.valider !== null}">
+            <DeclarationForm 
+                :gta_declarations="gta_declarations" 
+                :gta_codages="gta_codages"
+                @add-declaration="addDeclaration" />
+
+        </div>
     </AppModal>
 </template>
 
 <script>
+
 import AppModal from '@/components/pebble-ui/AppModal.vue'
 
 import date from 'date-and-time';
@@ -48,13 +64,13 @@ export default {
     data() {
         return {
             pending: {
-                periode: false
+                periode: false,
             },
             gta_periode: {
                 structure_temps_declarations: [],
                 gta_declarations: []
             },
-            removedStd: false
+            removedStd: false,
         }
     },
 
@@ -105,6 +121,29 @@ export default {
          */
         periodeDateSql() {
             return `${this.gta_periode.period_year}-${padTime(this.gta_periode.period_month)}-${padTime(this.gta_periode.period_day)}`;
+        },
+
+        /**
+         * Retourne le contenu de l'alert en fonction de l'état de validation de la période.
+         * 
+         * @return {string}
+         */
+        textPeriode(){
+            if(this.gta_periode.valider == 'OUI'){
+                return 'Pointage validé';
+            }else {
+                return 'Pointage refusé';
+            }
+        },
+
+        /**
+         * Retourne la classe bootstrap en fonction de l'état de validation de la période.
+         * @return {string}
+         */
+        validationClass() {
+            if (this.gta_periode.valider == 'OUI') return 'alert-success';
+            else if (this.gta_periode.valider == 'NON') return 'alert-danger';
+            return '';
         }
 
     },  
@@ -240,11 +279,37 @@ export default {
          */
         addDeclaration(declaration) {
             this.gta_periode.gta_declarations.push(declaration);
+        },
+
+        /**
+         * Récupère et copie la GtaPeriode depuis le store
+         */
+        importGtaPeriode() {
+            this.gta_periode = JSON.parse(JSON.stringify(this.getGtaPeriode()));
+        },
+
+        /**
+         * Réinitialise l'état de validation de la période à null
+         */
+        resetPeriodeValidation(){
+
+            if (confirm("Souhaitez vous ré-initialiser l'état de validation ?")) {
+                this.pending.periode = true;
+                this.$app.apiPost('gtaPeriode/POST/'+ this.periodeId +'/reset')
+                .then(data => {
+                    this.refreshPersonnelGtaPeriodes(data);
+                    this.importGtaPeriode();
+                })
+                .catch(this.$app.catchError)
+                .finally(() => {
+                    this.pending.periode = false;
+                });
+            }
         }
     },
 
     mounted() {
-        this.gta_periode = JSON.parse(JSON.stringify(this.getGtaPeriode()));
+        this.importGtaPeriode();
     },
 }
 </script>

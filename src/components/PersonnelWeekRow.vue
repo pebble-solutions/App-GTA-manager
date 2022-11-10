@@ -103,8 +103,9 @@ export default {
                         for(const codageId in total_summary[index]) {
                             if(total_summary[index][codageId]) {
                                 let codage = this.gta_codages.find(e => e.id == codageId);
-        
-                                declarations.push(codage.nom);
+                                if(codage){
+                                    declarations.push(codage.nom);
+                                }
                             }
                         }
                     }

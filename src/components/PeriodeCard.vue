@@ -7,7 +7,7 @@
 
             <div class="card-body" v-if="showDetails">
 
-                <div class="d-grid mb-2" v-if="editable">
+                <div class="d-grid mb-2" v-if="editable"> 
                     <router-link :to="'/week/'+$route.params.id+'/periode/'+periode.id" v-slot="{href, navigate}" custom>
                         <a :href="href" @click="navigate" class="btn btn-sm btn-light">
                             <i class="bi bi-pencil-fill"></i> Modifier
@@ -18,14 +18,14 @@
                     <i class="bi bi-lock-fill"></i> Période traitée.
                 </div>
 
-                <StdItem v-for="std in periode.structure_temps_declarations" :key="'std-item-'+std.id" :StructureTempsDeclaration="std"></StdItem>
+                <StdItem v-for="std in periode.structure_temps_declarations" :key="'std-item-'+std.id" :StructureTempsDeclaration="std" ></StdItem>
 
                 <div class="mt-3 mb-2">
                     <strong>Déclarations</strong>
                 </div>
 
                 <div class="list-group list-group-flush">
-                    <GtaDeclarationItem v-for="declaration in periode.gta_declarations" :key="'declration-item-'+declaration.id" :GtaDeclaration="declaration"></GtaDeclarationItem>
+                    <GtaDeclarationItem v-for="declaration in periode.gta_declarations" :key="'declration-item-'+declaration.id" :GtaDeclaration="declaration" ></GtaDeclarationItem>
                 </div>
             </div>
     
@@ -201,6 +201,7 @@ export default {
                 this.selected = !this.selected;
             }
         },
+        
     },
 
     components: { StdItem, GtaDeclarationItem, PeriodeCardHeader },

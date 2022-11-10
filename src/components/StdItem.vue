@@ -17,8 +17,8 @@
                 <span class="timeline-label">{{pause_duration}}</span>
             </div>
 
-            <div class="timeline-item fs-6">
-                <span class="timeline-icon text-secondary"><i class="bi bi-check2-circle"></i></span>
+            <div class="timeline-item fs-6" :class="{'text-warning' : StructureTempsDeclaration.clock_status !=='over'}" >
+                <span class="timeline-icon"><i class="bi bi-check2-circle"></i></span>
                 <span class="timeline-label">{{time_end}}</span>
             </div>
         </div>

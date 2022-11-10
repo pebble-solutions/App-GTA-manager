@@ -209,7 +209,6 @@ export default createStore({
 				if (personnel) {
 					let periode = personnel.gta_periodes.find(e => e.id === GtaPeriode.id);
 
-
 					if (periode) {
 						for (const key in GtaPeriode) {
 							periode[key] = GtaPeriode[key];
@@ -430,7 +429,21 @@ export default createStore({
 		 * @param {Array} gta_periodes Collection de Gta Periodes
 		 */
 		refreshPersonnelGtaPeriodes(context, gta_periodes) {
-			context.commit('personnel_gta_periodes', gta_periodes);
+			context.commit('personnel_gta_periodes', gta_periodes); 
+		},
+
+		/**
+		 * Met à jour les informations StructureTempsDeclaration sur la liste de gta_periode chargée.
+		 * @param {Object} context Instance VueX
+		 * @param {Object} std StructureTempsDeclaration à mettre à jour
+		 */
+		refreshPersonnelStd(context, std) {
+			let gta_periode = {
+				id: std.gta__periode_id,
+				structure__personnel_id: std.structure__personnel_id,
+				structure_temps_declarations: [std]
+			};
+			context.commit('personnel_gta_periodes', [gta_periode]);
 		},
 
 		/**

@@ -51,6 +51,7 @@
 </style>
 
 <script>
+
 import Spinner from '@/components/pebble-ui/Spinner.vue';
 import PersonnelWeekRow from '@/components/PersonnelWeekRow.vue';
 import { mapActions, mapState } from 'vuex';
