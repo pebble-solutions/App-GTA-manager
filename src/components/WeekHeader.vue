@@ -1,6 +1,6 @@
 <template>
     
-    <div class="week-header">
+    <div class="week-header shadow-sm">
         <table class="table table-sm table-bordered m-0" id="header-week">
             <thead class="align-middle text-center table-secondary text-secondary">
                 <tr>

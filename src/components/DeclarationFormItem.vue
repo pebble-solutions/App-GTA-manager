@@ -5,13 +5,13 @@
 
         <div class="box-qte">
             <div class="input-group input-group-sm ms-auto">
-                <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="incrementQte(-1)">
+                <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="incrementQte(-1)" v-if="!declaration.valider">
                     <i class="bi bi-dash-lg"></i>
                 </button>
                 
                 <input type="text" class="form-control text-center" v-model="value" :id="'declaration-qte-input-'+declaration.id">
 
-                <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="incrementQte(1)">
+                <button type="button" class="btn btn-outline-secondary input-group-text" @click.prevent="incrementQte(1)" v-if="!declaration.valider">
                     <i class="bi bi-plus-lg"></i>
                 </button>
             </div>

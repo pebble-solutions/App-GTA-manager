@@ -43,8 +43,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="text-secondary">Pause</h5>
                     
-                    <div>
-    
+                    <div v-if="!tmpStd.valider">
                         <button class="btn btn-outline-danger btn-sm" type="button" @click="removeBreak()">
                             <i class="bi bi-trash"></i>
                             Supprimer
@@ -79,14 +78,14 @@
                 </div>
             </div>
     
-            <div class="d-grid" v-else>
+            <div class="d-grid" v-else-if="!showBreak && !tmpStd.valider">
                 <button class="btn btn-light btn-sm" type="button" @click.prevent="showBreak = true">
                     <i class="bi bi-plus-circle"></i>
                     Ajouter une pause
                 </button>
             </div>
     
-            <div class="d-grid my-2">
+            <div class="d-grid my-2"  v-if="!tmpStd.valider">
                 <button class="btn btn-outline-danger btn-sm" type="button" @click.prevent="deleteStd()">
                     <i class="bi bi-trash"></i>
                     Supprimer le pointage

@@ -21,13 +21,24 @@
 		</template>
 
 		<template v-slot:list>
+
+			<div class="bg-light border-bottom border-light sticky-top shadow-sm w-100">
+				<div class="p-1 d-flex">
+					<div class="pe-1"><Datepicker v-model="searchDate" weekPicker autoApply /></div>
+					<button type="button" class="btn btn-outline-secondary" @click.prevent="searchWeek" :disabled="pending.semaines">
+						<i class="bi bi-check-lg" v-if="!pending.semaines"></i>
+						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" v-else></span>
+					</button>
+				</div>
+			</div>
+
 			<Spinner v-if="pending.semaines && isConnectedUser"></Spinner>
 
-			<AppMenu v-if="semaines">
+			<AppMenu v-if="semaines && !pending.semaines">
 				<Spinner v-if="pending.moreWeeks"></Spinner>
 				<AppMenuItem id="btnBefore" button-style="btn-light text-primary" @click="getWeeks('before', '#btnBefore')" v-else>
 					<i class="bi bi-chevron-double-up d-block"></i>
-					Semaine précédente
+					Semaines précédentes
 				</AppMenuItem>
 
 				<AppMenuItem v-for="semaine in semaines" :key="semaine.week" :href="'/week/'+ semaine.year + semaine.week" >
@@ -36,7 +47,7 @@
 
 				<Spinner v-if="pending.moreWeeks"></Spinner>
 				<AppMenuItem id="btnAfter" button-style="btn-light text-primary" @click="getWeeks('after', '#btnAfter')" v-else>
-						Semaine suivante
+						Semaines suivantes
 						<i class="bi bi-chevron-double-down d-block"></i>
 				</AppMenuItem>
 			</AppMenu>
@@ -44,7 +55,7 @@
 
 		<template v-slot:core>
 			<div class="bg-light">
-				<router-view :cfg="cfg" :semaine="selectedWeek" v-if="isConnectedUser" />
+				<router-view :cfg="cfg" :semaine="selectedWeek" v-if="isConnectedUser && selectedWeek" />
 			</div>
 		</template>
 
@@ -89,6 +100,11 @@ import DateInterval from './components/DateInterval.vue'
 import { mapActions, mapState } from 'vuex'
 import date from 'date-and-time';
 
+import { ref } from 'vue';
+
+import Datepicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+
 export default {
 
 	data() {
@@ -104,7 +120,8 @@ export default {
 
 			currentWeek: null,
 			interval: [0, 0],
-			//semaines: null
+			//semaines: null,
+			searchDate: null
 		}
 	},
 
@@ -333,6 +350,24 @@ export default {
 				this.$store.commit('gta_codages', data);
 			})
 			.catch(this.$app.catchError)
+		},
+
+		/**
+		 * Lance une recherche depuis le formulaire de recherche des semaines.
+		 */
+		searchWeek() {
+			let year = this.searchDate[0].getFullYear();
+			let week = this.getWeekNumber(this.searchDate[0]);
+			let currentWeek = parseInt(`${year}${week}`);
+			
+			let start = this.weekCalcul(currentWeek, 'less', 5);
+			let end = this.weekCalcul(currentWeek, 'add', 2);
+
+			this.loadWeeks(start, end)
+			.then(() => {
+				this.$router.push('/week/'+currentWeek);
+			})
+			.catch(this.$app.catchError);
 		}
 	},
 
@@ -342,6 +377,7 @@ export default {
 		AppMenuItem,
 		WeekListItem,
 		Spinner,
+		Datepicker,
 		DateInterval
 	},
 
@@ -350,9 +386,8 @@ export default {
 
 		this.$app.addEventListener('structureChanged', (structureId) => {
 			this.switchStructure(structureId);
+			this.searchDate = ref();
 		});
-
-
 
 	},
 }

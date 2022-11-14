@@ -3,12 +3,12 @@
         <div class="d-flex justify-content-between align-items-center">
             <h4 class="card-title">Déclarations</h4>
 
-            <button v-if="!addInfos" type="button" class="btn btn-outline-primary btn-sm" @click="addInfos = !addInfos">
+            <button v-if="!addInfos && !gtaPeriode.valider" type="button" class="btn btn-outline-primary btn-sm" @click="addInfos = !addInfos">
                 <i class="bi bi-plus-circle"></i>
                 Ajouter
             </button>
 
-            <button v-else type="button" class="btn btn-outline-secondary btn-sm" @click="addInfos = !addInfos">
+            <button v-else-if="addInfos && !gtaPeriode.valider" type="button" class="btn btn-outline-secondary btn-sm" @click="addInfos = !addInfos">
                 <i class="bi bi-x-circle"></i>
                 Annuler
             </button>
@@ -46,6 +46,7 @@ import { mapState } from 'vuex';
 export default {
     props: {
         gta_declarations: Array,
+        gtaPeriode: Object
     },
 
     data() {

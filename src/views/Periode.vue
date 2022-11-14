@@ -1,16 +1,7 @@
 <template>
     <AppModal title="Modifier la période" :cancel-btn="true" :submit-btn="!gta_periode.valider" @modal-hide="routeToBack()" @submit="recordPeriode()" :pending="pending.periode">
 
-        <div class="mb-2" v-if="gta_periode.valider !== null">
-            <div class="text-center p-1 alert" :class="validationClass">
-                {{textPeriode}}
-            </div>
-            <div class="d-grid">
-                <button class="btn btn-sm btn-outline-secondary" @click.prevent="resetPeriodeValidation">
-                    <i class="bi me-1" :class="{'bi-arrow-counterclockwise' : !pending.periode, 'spinner-border spinner-border-sm' : pending.periode}">
-                    </i> Annuler </button>
-            </div>
-        </div>
+        <validation-status @refresh="refreshData" :gta-periode="gta_periode" v-if="gta_periode.valider !== null"></validation-status>
 
         <div v-if="removedStd" class="alert alert-secondary">
             <i class="bi bi-trash"></i>
@@ -27,7 +18,7 @@
             </div>
 
             <div class="d-grid">
-                <button type="button" class="btn btn-sm btn-outline-primary" v-if="!stds.length" @click.prevent="addStd()"><i class="bi bi-plus-circle"></i> Ajouter un pointage</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" v-if="!stds.length && !gta_periode.valider" @click.prevent="addStd()"><i class="bi bi-plus-circle"></i> Ajouter un pointage</button>
             </div>
         </div>
 
@@ -39,6 +30,7 @@
             <DeclarationForm 
                 :gta_declarations="gta_declarations" 
                 :gta_codages="gta_codages"
+                :gta-periode="gta_periode"
                 @add-declaration="addDeclaration" />
 
         </div>
@@ -55,6 +47,7 @@ import DeclarationForm from '../components/DeclarationForm.vue';
 import { mapActions, mapState } from 'vuex';
 
 import {padTime} from '../js/date';
+import ValidationStatus from '../components/ValidationStatus.vue';
 
 export default {
     props: {
@@ -121,34 +114,11 @@ export default {
          */
         periodeDateSql() {
             return `${this.gta_periode.period_year}-${padTime(this.gta_periode.period_month)}-${padTime(this.gta_periode.period_day)}`;
-        },
-
-        /**
-         * Retourne le contenu de l'alert en fonction de l'état de validation de la période.
-         * 
-         * @return {string}
-         */
-        textPeriode(){
-            if(this.gta_periode.valider == 'OUI'){
-                return 'Pointage validé';
-            }else {
-                return 'Pointage refusé';
-            }
-        },
-
-        /**
-         * Retourne la classe bootstrap en fonction de l'état de validation de la période.
-         * @return {string}
-         */
-        validationClass() {
-            if (this.gta_periode.valider == 'OUI') return 'alert-success';
-            else if (this.gta_periode.valider == 'NON') return 'alert-danger';
-            return '';
         }
 
     },  
 
-    components: { AppModal, StdForm, DeclarationForm },
+    components: { AppModal, StdForm, DeclarationForm, ValidationStatus },
 
     methods: {
         ...mapActions(['refreshPersonnelGtaPeriodes', 'refreshPersonnel']),
@@ -289,22 +259,13 @@ export default {
         },
 
         /**
-         * Réinitialise l'état de validation de la période à null
+         * Met à jour les données de la GtaPeriode
+         * 
+         * @param {object} data Les nouvelles données de la GtaPeriode
          */
-        resetPeriodeValidation(){
-
-            if (confirm("Souhaitez vous ré-initialiser l'état de validation ?")) {
-                this.pending.periode = true;
-                this.$app.apiPost('gtaPeriode/POST/'+ this.periodeId +'/reset')
-                .then(data => {
-                    this.refreshPersonnelGtaPeriodes(data);
-                    this.importGtaPeriode();
-                })
-                .catch(this.$app.catchError)
-                .finally(() => {
-                    this.pending.periode = false;
-                });
-            }
+        refreshData(data) {
+            this.refreshPersonnelGtaPeriodes(data);
+            this.importGtaPeriode();
         }
     },
 
