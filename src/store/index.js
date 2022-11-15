@@ -11,7 +11,8 @@ export default createStore({
 		periodes_selected: [],
 		personnelsDeclarations: [],
 		semaines: [],
-		gta_codages: []
+		gta_codages: [],
+		personnels: []
 	},
 	getters: {
 		activeStructure(state) {
@@ -267,6 +268,16 @@ export default createStore({
 		 */
 		gta_codages(state, data) {
 			state.gta_codages = data;
+		},
+
+		/**
+		 * Met à jour la liste du personnel disponible dans le store
+		 * 
+		 * @param {object} state Le state VueX
+		 * @param {array} data La liste du personnel à remplacer
+		 */
+		personnels(state, data) {
+			state.personnels = data;
 		}
 	},
 	actions: {

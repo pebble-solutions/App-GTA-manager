@@ -27,8 +27,8 @@
     </FooterToolbar>
 
     <router-view
-                @update-std="updateStds" 
-                @update-gta_declarations="updateGtaDeclarations"></router-view>
+        @update-std="updateStds" 
+        @update-gta_declarations="updateGtaDeclarations"></router-view>
 </template>
 
 <style lang="scss">

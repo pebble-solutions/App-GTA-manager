@@ -39,7 +39,7 @@
 
 <script>
 
-import AppModal from '@/components/pebble-ui/AppModal.vue'
+import AppModal from '@/components/pebble-ui/AppModal.vue';
 
 import date from 'date-and-time';
 import StdForm from '../components/StdForm.vue';

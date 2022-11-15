@@ -8,8 +8,34 @@
 		@auth-change="setLocal_user">
 
 		<template v-slot:header>
-			<div class="mx-2" v-if="selectedWeek">
-				Semaine {{getWeekNumber(new Date(selectedWeek.dd))}} : <DateInterval :dd="selectedWeek.dd" :df="selectedWeek.df"></DateInterval>
+			<div class="mx-2 d-flex align-items-center">
+				<div class="dropdown me-3">
+					<button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"  data-bs-auto-close="outside">
+						<i class="bi bi-people-fill"></i> Tous
+					</button>
+					<ul class="dropdown-menu">
+						<div class="px-3">
+							<div class="form-check text-nowrap">
+								<input type="checkbox" class="form-check-input" id="ckb-personnel-tous">
+								<label class="form-check-label" for="ckb-personnel-tous">
+									Tous le personnel
+								</label>
+							</div>
+						</div>
+						<div class="dropdown-divider"></div>
+						<div class="px-3" v-if="!pending.personnels">
+							<div class="form-check text-nowrap" v-for="personnel in personnels" :key="'personnel-'+personnel.id">
+								<input type="checkbox" class="form-check-input" :id="'ckb-personnel-'+personnel.id">
+								<label class="form-check-label" :for="'ckb-personnel-'+personnel.id">
+									{{personnel.cache_nom}}
+								</label>
+							</div>
+						</div>
+					</ul>
+				</div>
+				<div v-if="selectedWeek">
+					Sem. {{getWeekNumber(new Date(selectedWeek.dd))}} : <DateInterval :dd="selectedWeek.dd" :df="selectedWeek.df"></DateInterval>
+				</div>
 			</div>
 		</template>
 
@@ -114,7 +140,8 @@ export default {
 			cfgSlots: CONFIG.cfgSlots,
 			pending: {
 				semaines: true,
-				moreWeeks: false
+				moreWeeks: false,
+				personnels: true
 			},
 			isConnectedUser: false,
 
@@ -127,7 +154,7 @@ export default {
 
 	computed: {
 
-		...mapState(['semaines']),
+		...mapState(['semaines', 'personnels']),
 
 		/**
 		 * Retourne la semaine sélectionnée
@@ -194,6 +221,8 @@ export default {
 				});
 
 				this.loadGtaCodages();
+
+				this.loadPersonnels();
 			}
 		},
 
@@ -368,6 +397,24 @@ export default {
 				this.$router.push('/week/'+currentWeek);
 			})
 			.catch(this.$app.catchError);
+		},
+
+		/**
+		 * Charge la liste du personnel
+		 */
+		loadPersonnels() {
+			this.pending.personnels = true;
+
+			this.$app.apiGet('structurePersonnel/GET/list', {
+				archived: null
+			})
+			.then((data) => {
+				this.$store.commit('personnels', data)
+			})
+			.catch(this.$app.catchError)
+			.finally(() => {
+				this.pending.personnels = false;
+			});
 		}
 	},
 

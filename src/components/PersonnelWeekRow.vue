@@ -2,7 +2,18 @@
     <tbody class="table-group-divider table-personnel">
 
         <tr v-if="personnel" class="table-secondary">
-            <td colspan="9"><PersonnelBadge :personnel="personnel"></PersonnelBadge></td>
+            <td colspan="9">
+                <div class="d-flex justify-content-between align-items-center">
+                    <PersonnelBadge :personnel="personnel"></PersonnelBadge>
+                    <div>
+                        <router-link :to="'/week/'+$route.params.id+'/data/personnel/'+personnel.id" v-slot="{href, navigate}" custom>
+                            <a :href="href" @click="navigate" class="btn btn-sm btn-light" title="Afficher la source des données">
+                                <i class="bi bi-database"></i>
+                            </a>
+                        </router-link>
+                    </div>
+                </div>
+            </td>
         </tr>
 
         <template v-if="summary.length != 0">

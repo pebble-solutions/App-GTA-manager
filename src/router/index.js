@@ -3,23 +3,28 @@ import Week from '../views/Week.vue'
 import Home from '../views/Home.vue'
 
 const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/week/:id',
-    name: 'Validation',
-    component: Week,
-    children: [
-      {
-        path:'periode/:idPeriode/',
-        name: "EditPointage",
-        component: () => import('../views/Periode.vue'),
-      }
-    ]
-  },
+    {
+        path: '/',
+        name: 'Home',
+        component: Home
+    },
+    {
+        path: '/week/:id',
+        name: 'Validation',
+        component: Week,
+        children: [
+            {
+                path:'periode/:idPeriode/',
+                name: "EditPointage",
+                component: () => import('../views/Periode.vue'),
+            },
+            {
+                path: 'data/personnel/:idPersonnel',
+                name: "DataPersonnel",
+                component: () => import('../views/Data.vue')
+            }
+        ]
+    },
 
   // {
   //   path: '/about',
@@ -47,8 +52,8 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(),
-  routes
+    history: createWebHashHistory(),
+    routes
 })
 
 export default router
