@@ -9,30 +9,11 @@
 
 		<template v-slot:header>
 			<div class="mx-2 d-flex align-items-center">
-				<div class="dropdown me-3">
-					<button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"  data-bs-auto-close="outside">
-						<i class="bi bi-people-fill"></i> Tous
-					</button>
-					<ul class="dropdown-menu">
-						<div class="px-3">
-							<div class="form-check text-nowrap">
-								<input type="checkbox" class="form-check-input" id="ckb-personnel-tous">
-								<label class="form-check-label" for="ckb-personnel-tous">
-									Tous le personnel
-								</label>
-							</div>
-						</div>
-						<div class="dropdown-divider"></div>
-						<div class="px-3" v-if="!pending.personnels">
-							<div class="form-check text-nowrap" v-for="personnel in personnels" :key="'personnel-'+personnel.id">
-								<input type="checkbox" class="form-check-input" :id="'ckb-personnel-'+personnel.id">
-								<label class="form-check-label" :for="'ckb-personnel-'+personnel.id">
-									{{personnel.cache_nom}}
-								</label>
-							</div>
-						</div>
-					</ul>
-				</div>
+				<button class="btn btn-dark me-3" type="button" @click.prevent="displayPersonnelFilter = true">
+					<i class="bi bi-people-fill me-1" :class="{'text-warning': selectedPersonnels.length}"></i>
+					<span v-if="selectedPersonnels.length" class="text-warning">{{selectedPersonnels.length}} sélectionnés</span>
+					<span v-else>Tous</span>
+				</button>
 				<div v-if="selectedWeek">
 					Sem. {{getWeekNumber(new Date(selectedWeek.dd))}} : <DateInterval :dd="selectedWeek.dd" :df="selectedWeek.df"></DateInterval>
 				</div>
@@ -83,6 +64,16 @@
 			<div class="bg-light">
 				<router-view :cfg="cfg" :semaine="selectedWeek" v-if="isConnectedUser && selectedWeek" />
 			</div>
+
+			<AppModal className="modal-dialog-scrollable" title="Filtrer le personnel" 
+				:display="displayPersonnelFilter"
+				:submitBtn="true" 
+				submitLabel="Valider" 
+				
+				@modal-hide="displayPersonnelFilter = false"
+				@submit="updatePersonnelSelection()">
+				<PersonnelFilter @selection-change="personnelsIdSelectionChange"></PersonnelFilter>
+			</AppModal>
 		</template>
 
 	</AppWrapper>
@@ -130,6 +121,8 @@ import { ref } from 'vue';
 
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+import AppModal from './components/pebble-ui/AppModal.vue'
+import PersonnelFilter from './components/PersonnelFilter.vue'
 
 export default {
 
@@ -148,13 +141,16 @@ export default {
 			currentWeek: null,
 			interval: [0, 0],
 			//semaines: null,
-			searchDate: null
+			searchDate: null,
+
+			personnelsIdsSelection: [],
+			displayPersonnelFilter: false
 		}
 	},
 
 	computed: {
 
-		...mapState(['semaines', 'personnels']),
+		...mapState(['semaines', 'personnels', 'selectedPersonnels']),
 
 		/**
 		 * Retourne la semaine sélectionnée
@@ -178,7 +174,7 @@ export default {
 	},	
 
 	methods: {
-		...mapActions(['resetPeriodeSelection', 'addSemaines', 'refreshSemaines', 'resetSemaines']),
+		...mapActions(['resetPeriodeSelection', 'addSemaines', 'refreshSemaines', 'resetSemaines', 'setPersonnelsSelection']),
 
 		/**
 		 * Met à jour les informations de l'utilisateur connecté
@@ -335,6 +331,11 @@ export default {
 
 			let urlApi = 'gtaPeriode/GET/listWeeksAnalytics?week_start=' + start + '&week_end=' + end + '&order_direction=' + options.direction;
 
+			if (this.selectedPersonnels.length) {
+				let ids = this.selectedPersonnels.map(e => e.id);
+				urlApi += '&structure__personnel_id='+ids.join(',');
+			}
+
 			this.pending[options.pending] = true;
 
 			return this.$app.apiGet(urlApi)
@@ -355,6 +356,7 @@ export default {
 				}
 				else {
 					if (options.appendMode == 'replace') {
+						this.$router.push('/');
 						this.resetSemaines();
 					}
 					// this.semaines = data;
@@ -406,7 +408,8 @@ export default {
 			this.pending.personnels = true;
 
 			this.$app.apiGet('structurePersonnel/GET/list', {
-				archived: null
+				archived: null,
+				mls_label: 'fonction,secteur'
 			})
 			.then((data) => {
 				this.$store.commit('personnels', data)
@@ -415,6 +418,34 @@ export default {
 			.finally(() => {
 				this.pending.personnels = false;
 			});
+		},
+
+		/**
+		 * Modifie la liste du personnel sélectionné avant validation.
+		 * 
+		 * @param {array} selection Liste des IDS nouvellement sélectionnés
+		 */
+		personnelsIdSelectionChange(selection) {
+			this.personnelsIdsSelection = selection;
+		},
+
+		/**
+		 * Met à jour la liste du personnel sélectionné au niveau du store.
+		 * Génère une collection de personnels depuis la liste d'IDs, puis met à jour
+		 * le store.
+		 */
+		updatePersonnelSelection() {
+			let personnels = [];
+
+			this.personnelsIdsSelection.forEach(id => {
+				let personnel = this.personnels.find(e => e.id == id);
+				if (personnel) {
+					personnels.push(personnel);
+				}
+			});
+
+			this.setPersonnelsSelection(personnels);
+			this.displayPersonnelFilter = false;
 		}
 	},
 
@@ -425,7 +456,9 @@ export default {
 		WeekListItem,
 		Spinner,
 		Datepicker,
-		DateInterval
+		DateInterval,
+AppModal,
+PersonnelFilter
 	},
 
 	mounted() {

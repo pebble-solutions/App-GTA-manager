@@ -12,7 +12,8 @@ export default createStore({
 		personnelsDeclarations: [],
 		semaines: [],
 		gta_codages: [],
-		personnels: []
+		personnels: [],
+		selectedPersonnels: []
 	},
 	getters: {
 		activeStructure(state) {
@@ -192,6 +193,9 @@ export default createStore({
 					}
 				});
 			}
+			else if (optionsPersonnels.action == 'set') {
+				state.personnelsDeclarations = personnels;
+			}
 			else {
 				state.personnelsDeclarations = [];
 			}
@@ -278,6 +282,44 @@ export default createStore({
 		 */
 		personnels(state, data) {
 			state.personnels = data;
+		},
+
+		/**
+		 * Ajoute ou retire le personnel listé de la sélection.
+		 * 
+		 * @param {object} state Le state VueX
+		 * @param {object} optionsPersonnels 
+		 * - personnels : la liste du personnel
+		 * - action : 'add', 'remove', 'reset', 'set'
+		 */
+		selectedPersonnels(state, optionsPersonnels) {
+			let action = optionsPersonnels.action;
+
+			if (action == 'reset') {
+				state.selectedPersonnels = [];
+			}
+			else if (action == 'set') {
+				let personnels = optionsPersonnels.personnels;
+				state.selectedPersonnels = personnels;
+			}
+			else {
+				let personnels = optionsPersonnels.personnels;
+				
+				personnels.forEach((personnel) => {
+					let index = state.selectedPersonnels.findIndex(e => e.id == personnel.id);
+	
+					if (index === -1) {
+						if (action == 'add') {
+							state.selectedPersonnels.push(personnel);
+						}
+					}
+					else {
+						if (action == 'remove') {
+							state.selectedPersonnels.splice(index, 1);
+						}
+					}
+				});
+			}
 		}
 	},
 	actions: {
@@ -433,6 +475,15 @@ export default createStore({
 			context.commit('personnels_declaration', {personnels, action : 'refresh'});
 		},
 
+		/**
+		 * Réinitialise la liste du personnel avec une nouvelle liste
+		 * @param {Object} context Instance VueX
+		 * @param {Array} personnels Collection de personnels à mettre à jour
+		 */
+		setPersonnel(context, personnels) {
+			context.commit('personnels_declaration', {personnels, action : 'set'});
+		},
+
 
 		/**
 		 * Met à jour des gta_periodes sur la collection de personnels stockée dans le store
@@ -504,7 +555,57 @@ export default createStore({
 		getCodageLabelFromId(context, codage_id) {
 			let codage = context.state.gta_codages.find(e => e.id === codage_id);
 			return typeof codage !== 'undefined' ? codage.nom : 'Sans-nom ('+codage_id+')';
-		}
+		},
+
+		/**
+		 * Ajoute un personnel à la sélection
+		 * 
+		 * @param {object} context Instance VueX
+		 * @param {object} personnel Le personnel à ajouter
+		 */
+		addPersonnelToSelection(context, personnel) {
+			context.commit('selectedPersonnels', {
+				action: 'add',
+				personnels: [personnel]
+			});
+		},
+
+		/**
+		 * Retire un personnel de la sélection
+		 * 
+		 * @param {object} context Instance VueX
+		 * @param {object} personnel Le personnel à retirer
+		 */
+		removePersonnelFromSelection(context, personnel) {
+			context.commit('selectedPersonnels', {
+				action: 'remove',
+				personnels: [personnel]
+			});
+		},
+
+		/**
+		 * Vide la liste du personnel sélectionné
+		 * 
+		 * @param {object} context Instance VueX
+		 */
+		resetPersonnelSelection(context) {
+			context.commit('selectedPersonnels', {
+				action: 'reset'
+			});
+		},
+
+		/**
+		 * Remplace toute la liste du personnel sélectionné par une nouvelle liste
+		 * 
+		 * @param {object} context Instance VueX
+		 * @param {array} personnels Collection de personnels à appliquer
+		 */
+		setPersonnelsSelection(context, personnels) {
+			context.commit('selectedPersonnels', {
+				action: 'set',
+				personnels
+			});
+		},
 
 	},
 	modules: {

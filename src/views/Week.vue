@@ -90,7 +90,7 @@ export default {
 
     computed: {
 
-        ...mapState(['periodes_selected', 'login', 'personnelsDeclarations', 'semaines', 'gta_codages']),
+        ...mapState(['periodes_selected', 'login', 'personnelsDeclarations', 'semaines', 'gta_codages', 'selectedPersonnels']),
 
         /**
          * Retourne la liste des jours entre dd et df.
@@ -120,6 +120,30 @@ export default {
 
             return 'width:'+ size +'px';
         },
+
+        /**
+         * Retourne la requête initiale pour récupérer la liste des déclarations
+         * - dd
+         * - df
+         * - group_by_personnel
+         * - structure__personnel_id
+         * 
+         * @return {object}
+         */
+        declarationQuery() {
+            let query = {
+                dd: this.semaine.dd,
+                df: this.semaine.df,
+                group_by_personnel: true
+            };
+
+            if (this.selectedPersonnels.length) {
+                let ids = this.selectedPersonnels.map(e => e.id);
+                query.structure__personnel_id = ids.join(',');
+            }
+
+            return query;
+        }
     },
 
     watch: {
@@ -127,13 +151,21 @@ export default {
             this.resetPersonnel();
             this.loadDeclarations();
             this.resetPeriodeSelection();
+        },
+
+        /**
+         * Lorsque le personnel sélectionné est mis à jour, on recharge la vue et les déclarations
+         * depuis le serveur.
+         */
+        selectedPersonnels() {
+            this.loadDeclarations();
         }
     },
 
     components: { Spinner, PersonnelWeekRow, FooterToolbar, ValidationButtons, WeekHeader },
 
     methods: {
-        ...mapActions(['resetPeriodeSelection', 'refreshPersonnel', 'resetPersonnel', 'refreshPersonnelGtaPeriodes', 'refreshSemaines']),
+        ...mapActions(['resetPeriodeSelection', 'refreshPersonnel', 'setPersonnel', 'resetPersonnel', 'refreshPersonnelGtaPeriodes', 'refreshSemaines']),
 
         /**
          * Get the day number and month number 
@@ -155,13 +187,9 @@ export default {
 
             this.pending.week = true;
 
-            this.$app.apiGet(apiUrl, {
-                dd: this.semaine.dd,
-                df: this.semaine.df,
-                group_by_personnel: true
-            })
+            this.$app.apiGet(apiUrl, this.declarationQuery)
             .then( (data) => {
-                this.refreshPersonnel(data.personnels);
+                this.setPersonnel(data.personnels);
                 this.pending.week = false;
             })
             .catch(this.$app.catchError);
@@ -248,7 +276,12 @@ export default {
                 this.resetPeriodeSelection();
                 this.pending.validation = false;
 
-                let urlApi = "gtaPeriode/GET/listWeeksAnalytics?week_start=" + this.$route.params.id + "&week_end=" + this.$route.params.id + "&order_direction=ASC"
+                let urlApi = "gtaPeriode/GET/listWeeksAnalytics?week_start=" + this.$route.params.id + "&week_end=" + this.$route.params.id + "&order_direction=ASC";
+
+                if (this.selectedPersonnels.length) {
+                    let ids = this.selectedPersonnels.map(e => e.id);
+                    urlApi += '&structure__personnel_id='+ids.join(',');
+                }
 
                 return this.$app.apiGet(urlApi);
             }).then((data) => {
@@ -256,11 +289,7 @@ export default {
 
                 let urlApiCounters = "structureTempsDeclaration/GET/listDeclarations";
 
-                return this.$app.apiGet(urlApiCounters, {
-                    'dd': this.semaine.dd,
-                    'df': this.semaine.df,
-                    'group_by_personnel': true
-                });
+                return this.$app.apiGet(urlApiCounters, this.declarationQuery);
             }).then((data) => {
                 this.refreshPersonnel(data.personnels);
             }).catch(this.$app.catchError);
