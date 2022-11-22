@@ -18,6 +18,8 @@
                     <i class="bi bi-lock-fill"></i> Période traitée.
                 </div>
 
+                {{periode.commentaire}}
+
                 <StdItem v-for="std in periode.structure_temps_declarations" :key="'std-item-'+std.id" :StructureTempsDeclaration="std" ></StdItem>
 
                 <div class="mt-3 mb-2">

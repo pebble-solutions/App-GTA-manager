@@ -5,7 +5,8 @@
 		:cfg-menu="cfgMenu"
 		:cfg-slots="cfgSlots"
 		
-		@auth-change="setLocal_user">
+		@auth-change="setLocal_user"
+		@config-menu="displayConfig = true">
 
 		<template v-slot:header>
 			<div class="mx-2 d-flex align-items-center">
@@ -66,6 +67,7 @@
 			</div>
 
 			<AppModal className="modal-dialog-scrollable" title="Filtrer le personnel" 
+				id="personnelFilter"
 				:display="displayPersonnelFilter"
 				:submitBtn="true" 
 				submitLabel="Valider" 
@@ -73,6 +75,16 @@
 				@modal-hide="displayPersonnelFilter = false"
 				@submit="updatePersonnelSelection()">
 				<PersonnelFilter @selection-change="personnelsIdSelectionChange"></PersonnelFilter>
+			</AppModal>
+
+			<AppModal title="Configuration du module"
+				id="configModule"
+				:display="displayConfig"
+				:close-btn="true"
+				class-name="modal-dialog-scrollable modal-xl"
+				
+				@modal-hide="displayConfig = false">
+				<Config v-if="!pending.config" />
 			</AppModal>
 		</template>
 
@@ -123,6 +135,7 @@ import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import AppModal from './components/pebble-ui/AppModal.vue'
 import PersonnelFilter from './components/PersonnelFilter.vue'
+import Config from './components/Config.vue'
 
 export default {
 
@@ -134,7 +147,8 @@ export default {
 			pending: {
 				semaines: true,
 				moreWeeks: false,
-				personnels: true
+				personnels: true,
+				config: true
 			},
 			isConnectedUser: false,
 
@@ -144,13 +158,15 @@ export default {
 			searchDate: null,
 
 			personnelsIdsSelection: [],
-			displayPersonnelFilter: false
+			displayPersonnelFilter: false,
+
+			displayConfig: false
 		}
 	},
 
 	computed: {
 
-		...mapState(['semaines', 'personnels', 'selectedPersonnels']),
+		...mapState(['semaines', 'personnels', 'selectedPersonnels', 'config']),
 
 		/**
 		 * Retourne la semaine sélectionnée
@@ -170,11 +186,11 @@ export default {
 	watch: {
 		'$route'(to) {
 			this.currentWeek = to.params.id;
-		},
+		}
 	},	
 
 	methods: {
-		...mapActions(['resetPeriodeSelection', 'addSemaines', 'refreshSemaines', 'resetSemaines', 'setPersonnelsSelection']),
+		...mapActions(['resetPeriodeSelection', 'addSemaines', 'refreshSemaines', 'resetSemaines', 'setPersonnelsSelection', 'setConfigGta']),
 
 		/**
 		 * Met à jour les informations de l'utilisateur connecté
@@ -219,6 +235,8 @@ export default {
 				this.loadGtaCodages();
 
 				this.loadPersonnels();
+
+				this.loadConfig();
 			}
 		},
 
@@ -446,19 +464,21 @@ export default {
 
 			this.setPersonnelsSelection(personnels);
 			this.displayPersonnelFilter = false;
+		},
+
+		/**
+		 * Charge la configuration relative à la paie.
+		 */
+		loadConfig() {
+			this.pending.config = true;
+
+			this.$app.apiGet('gtaDeclaration/GET/config')
+			.then(data => this.setConfigGta(data)).catch(this.$app.catchError).finally(() => this.pending.config = false);
 		}
 	},
 
 	components: {
-		AppWrapper,
-		AppMenu,
-		AppMenuItem,
-		WeekListItem,
-		Spinner,
-		Datepicker,
-		DateInterval,
-AppModal,
-PersonnelFilter
+		AppWrapper, AppMenu, AppMenuItem, WeekListItem, Spinner, Datepicker, DateInterval, AppModal, PersonnelFilter, Config
 	},
 
 	mounted() {

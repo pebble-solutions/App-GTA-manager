@@ -13,7 +13,10 @@ export default createStore({
 		semaines: [],
 		gta_codages: [],
 		personnels: [],
-		selectedPersonnels: []
+		selectedPersonnels: [],
+		config: {
+			gta: null
+		}
 	},
 	getters: {
 		activeStructure(state) {
@@ -320,6 +323,34 @@ export default createStore({
 					}
 				});
 			}
+		},
+
+		/**
+		 * Met à jour les informations de configuration de la paie
+		 * 
+		 * @param {object} state Le state VueX
+		 * @param {object} configOptions La nouvelle configuration
+		 * - key : 'gta', 'rh'...
+		 * - config : la nouvelle configuration,
+		 * - mode : 'set' (défaut), 'update'
+		 */
+		config(state, configOptions) {
+			let key = configOptions.key;
+			let config = configOptions.config;
+			let mode = configOptions.mode ? configOptions.mode : 'set';
+
+			if (mode == 'update') {
+				if (typeof state.config[key] === 'undefined') {
+					state.config[key] = {};
+				}
+				
+				for (const k in config) {
+					state.config[key][k] = config[k];
+				}
+			}
+			else {
+				state.config[key] = config;
+			}
 		}
 	},
 	actions: {
@@ -607,6 +638,32 @@ export default createStore({
 			});
 		},
 
+		/**
+		 * Met à jour la configuration concernant la Gta
+		 * 
+		 * @param {object} context Instance VueX
+		 * @param {object} config La nouvelle configuration à écrire
+		 */
+		setConfigGta(context, config) {
+			context.commit('config', {
+				key: 'gta',
+				config
+			});
+		},
+
+		/**
+		 * Met à jour la configuration concernant la Gta
+		 * 
+		 * @param {object} context Instance VueX
+		 * @param {object} config La nouvelle configuration à écrire
+		 */
+		updateConfigGta(context, config) {
+			context.commit('config', {
+				key: 'gta',
+				config,
+				mode: 'update'
+			});
+		}
 	},
 	modules: {
 	}

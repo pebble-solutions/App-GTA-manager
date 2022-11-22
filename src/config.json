@@ -14,7 +14,7 @@
         "dev": "localhost"
     },
     "cfgMenu": {
-        "href": null
+        "href": "#config"
     },
     "cfgSlots": {
         "menu": false,

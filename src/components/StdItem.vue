@@ -2,10 +2,20 @@
     <div>
 
         <div class="timeline">
-            <div class="timeline-item mb-3 fs-6">
-                <span class="timeline-icon text-secondary"><i class="bi bi-stopwatch"></i></span>
-                <span class="timeline-label">{{time_start}}</span>
+            <div class="timeline-item fs-6"   v-if="StructureTempsDeclaration.dd != StructureTempsDeclaration.dd_finale">
+                <span class="timeline-icon text-secondary"><i class="bi bi-exclamation-diamond"></i></span>
+                <span class="timeline-label text-black-50" style="text-decoration : line-through">
+                    {{dateToTime(StructureTempsDeclaration.dd)}}
+                </span>
             </div>
+            <div class="timeline-item fs-6">
+                <span class="timeline-icon text-secondary"><i class="bi bi-stopwatch"></i></span>
+                <span class="timeline-label">
+                    {{time_start}}
+                </span>
+            </div>
+
+            <div class="pb-3"></div>
 
             <div v-if="pause_start" class="timeline-item">
                 <span class="timeline-icon text-secondary fs-6"><i class="bi bi-pause-fill"></i></span>
@@ -17,6 +27,12 @@
                 <span class="timeline-label">{{pause_duration}}</span>
             </div>
 
+            <div class="timeline-item fs-6"   v-if="StructureTempsDeclaration.df != StructureTempsDeclaration.df_finale">
+                <span class="timeline-icon text-secondary"><i class="bi bi-exclamation-diamond"></i></span>
+                <span class="timeline-label text-black-50" style="text-decoration : line-through">
+                    {{dateToTime(StructureTempsDeclaration.df)}}
+                </span>
+            </div>
             <div class="timeline-item fs-6" :class="{'text-warning' : StructureTempsDeclaration.clock_status !=='over'}" >
                 <span class="timeline-icon"><i class="bi bi-check2-circle"></i></span>
                 <span class="timeline-label">{{time_end}}</span>
@@ -52,7 +68,7 @@
 
 .timeline-item {
     display: flex;
-    align-items: center;
+    align-items: center ;
     position:relative;
     z-index: 5;
 }
