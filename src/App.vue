@@ -494,10 +494,13 @@ export default {
 		exportWeek() {
 			this.pending.exportWeek = true;
 
-			this.$app.ax.get('gtaPeriode/GET/exportCounters.csv?dd='+this.selectedWeek.dd+'&df='+this.selectedWeek.df, {
+			this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', {
+                dd: this.selectedWeek.dd,
+                df: this.selectedWeek.df
+            }, {
 				responseType: 'blob'
-			}).then(response => {
-				FileDownload(response.data, "counters_"+this.selectedWeek.dd+"_"+this.selectedWeek.df+".csv");
+			}).then(data => {
+				FileDownload(data, "counters_"+this.selectedWeek.dd+"_"+this.selectedWeek.df+".csv");
 			}).catch(this.$app.catchError).finally(() => this.pending.exportWeek = false);
 		}
 	},

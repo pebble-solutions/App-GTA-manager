@@ -64,3 +64,28 @@ export function numberToTimeString(time) {
 
     return hours + ":" + padTime(minutes); 
 }
+
+/**
+ * Convertie un objet date en une chaine de caractère date SQL
+ * AAAA-MM-JJ
+ * AAAA-MM-JJ HH:II:SS (si useTime est true)
+ * 
+ * @param {Date} date La date à transformer
+ * @param {boolean} useTime Si true, retourne aussi les heures
+ * 
+ * @return {string}
+ */
+export function toSqlDate(date, useTime) {
+	let dateSql = date.getFullYear()         + '-' +
+	padTime(date.getMonth() + 1)  + '-' +
+	padTime(date.getDate());
+	
+	if (useTime) {
+		dateSql += ' '+
+			padTime(date.getHours())      + ':' +
+			padTime(date.getMinutes())    + ':' +
+			padTime(date.getSeconds());
+	}
+
+	return dateSql;
+}

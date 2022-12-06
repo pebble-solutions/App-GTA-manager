@@ -45,6 +45,10 @@
                     :periode="periode"
                     :personnel="personnel"
                     @change="$emit('change')" />
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-light shadow" type="button" @click.prevent="createPeriode(day)"><i class="bi bi-plus"></i> Ajouter</button>
+                </div>
             </td>
 
             <td class="col-day"></td>
@@ -65,9 +69,10 @@
 <script>
 import Summary from '@/components/Summary.vue';
 import PersonnelBadge from './PersonnelBadge.vue';
-import { mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import PeriodeCard from './PeriodeCard.vue';
 import FileDownload from 'js-file-download';
+import { toSqlDate } from '../js/date';
 
 export default {
     props: {
@@ -98,6 +103,8 @@ export default {
     components: { Summary, PersonnelBadge, PeriodeCard },
 
     methods: {
+        ...mapActions(['refreshPersonnelGtaPeriodes']),
+
         /**
          * Renvoi un tableau summary avec juste les informations qui nous interesse et non null
          * 1- ajout dans un nouveau trableau juste les element qui nous interesse
@@ -158,11 +165,31 @@ export default {
         exportPersonnel() {
             this.pending.export = true;
 
-			this.$app.ax.get('gtaPeriode/GET/exportCounters.csv?dd='+this.semaine.dd+'&df='+this.semaine.df+'&structure__personnel_id='+this.personnel.id, {
+			this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', {
+                dd: this.semaine.dd,
+                df: this.semaine.df,
+                structure__personnel_id: this.personnel.id
+            }, {
 				responseType: 'blob'
-			}).then(response => {
-				FileDownload(response.data, "counters_"+this.personnel.id+"_"+this.semaine.dd+"_"+this.semaine.df+".csv");
+			}).then(data => {
+				FileDownload(data, "counters_"+this.personnel.id+"_"+this.semaine.dd+"_"+this.semaine.df+".csv");
 			}).catch(this.$app.catchError).finally(() => this.pending.export = false);
+        },
+
+        /**
+         * Crée une nouvelle période sur la journée sélectionnée et reroute sur la configuration de la période
+         * 
+         * @param {Date} date         Date SQL
+         */
+        createPeriode(date) {
+            this.$app.apiPost('structurePersonnel/POST/'+this.personnel.id+'/createGtaPeriode', {
+                date: toSqlDate(date)
+            }).then((periode) => {
+                periode.structure_temps_declarations = [];
+                periode.gta_declarations = [];
+                this.refreshPersonnelGtaPeriodes([periode]);
+                this.$router.push(`/week/${this.semaine.year}${this.semaine.week}/periode/${periode.id}`);
+            }).catch(this.$app.catchError);
         }
     }
 }
