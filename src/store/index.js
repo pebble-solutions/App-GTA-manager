@@ -576,16 +576,21 @@ export default createStore({
 		},
 
 		/**
-		 * Trouve le libellé d'un GtaCodage depuis son ID.
-		 * 
-		 * @param {Object} context Instance VueX
-		 * @param {Number} codage_id L'id du codage à trouver
-		 * 
-		 * @returns {String}
-		 */
+         * Retourne un libellé de codage depuis un ID. Retournera le nom, ou a défaut 
+         * le code, le nouveau code...
+         * 
+		 * @param {object} context L'instance VueX
+         * @param {number} codageId L'ID du codage à trouver
+         * 
+         * @return {string}
+         */
 		getCodageLabelFromId(context, codage_id) {
 			let codage = context.state.gta_codages.find(e => e.id === codage_id);
-			return typeof codage !== 'undefined' ? codage.nom : 'Sans-nom ('+codage_id+')';
+			let nom;
+			if (typeof codage !== 'undefined') {
+				nom = codage.nom ?? codage.nom_commun ?? codage.code ?? codage.code_nouveau ?? codage.code_ancien;
+			}
+			return nom ?? 'Sans-nom (code '+codage_id+')';
 		},
 
 		/**

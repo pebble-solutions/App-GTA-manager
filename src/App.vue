@@ -18,17 +18,23 @@
 				<div v-if="selectedWeek">
 					Sem. {{getWeekNumber(new Date(selectedWeek.dd))}} : <DateInterval :dd="selectedWeek.dd" :df="selectedWeek.df"></DateInterval>
 				</div>
+
+				<button class="btn btn-dark mx-3" type="button" @click.prevent="exportWeek()">
+					<i class="bi bi-cloud-download-fill me-1" v-if="!pending.exportWeek"></i>
+					<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" v-else></span>
+					<span>Exporter</span>
+				</button>
 			</div>
 		</template>
 
 
-		<template v-slot:menu>
+		<template v-slot:menu v-if="isConnectedUser">
 			<AppMenu>
 				<AppMenuItem :href="'/week/'+ currentWeek" look="dark" icon="bi bi-calendar2-check">Validation</AppMenuItem>
 			</AppMenu>
 		</template>
 
-		<template v-slot:list>
+		<template v-slot:list v-if="isConnectedUser">
 
 			<div class="bg-light border-bottom border-light sticky-top shadow-sm w-100">
 				<div class="p-1 d-flex">
@@ -61,7 +67,7 @@
 			</AppMenu>
 		</template>
 
-		<template v-slot:core>
+		<template v-slot:core v-if="isConnectedUser">
 			<div class="bg-light">
 				<router-view :cfg="cfg" :semaine="selectedWeek" v-if="isConnectedUser && selectedWeek" />
 			</div>
@@ -137,6 +143,8 @@ import AppModal from './components/pebble-ui/AppModal.vue'
 import PersonnelFilter from './components/PersonnelFilter.vue'
 import Config from './components/Config.vue'
 
+import FileDownload from 'js-file-download'
+
 export default {
 
 	data() {
@@ -148,7 +156,8 @@ export default {
 				semaines: true,
 				moreWeeks: false,
 				personnels: true,
-				config: true
+				config: true,
+				exportWeek: false
 			},
 			isConnectedUser: false,
 
@@ -190,7 +199,7 @@ export default {
 	},	
 
 	methods: {
-		...mapActions(['resetPeriodeSelection', 'addSemaines', 'refreshSemaines', 'resetSemaines', 'setPersonnelsSelection', 'setConfigGta']),
+		...mapActions(['resetPeriodeSelection', 'addSemaines', 'refreshSemaines', 'resetSemaines', 'setPersonnelsSelection', 'setConfigGta', 'resetPersonnelSelection']),
 
 		/**
 		 * Met à jour les informations de l'utilisateur connecté
@@ -218,6 +227,9 @@ export default {
 			this.$store.dispatch('switchStructure', structureId);
 
 			if(structureId) {
+				this.resetPersonnelSelection();
+				this.personnelsIdsSelection = [];
+				
 				let today = new Date();
 				let year = today.getFullYear();
 
@@ -474,6 +486,22 @@ export default {
 
 			this.$app.apiGet('gtaDeclaration/GET/config')
 			.then(data => this.setConfigGta(data)).catch(this.$app.catchError).finally(() => this.pending.config = false);
+		},
+
+		/**
+		 * Lance l'export des données de la semaine ouverte
+		 */
+		exportWeek() {
+			this.pending.exportWeek = true;
+
+			this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', {
+                dd: this.selectedWeek.dd,
+                df: this.selectedWeek.df
+            }, {
+				responseType: 'blob'
+			}).then(data => {
+				FileDownload(data, "counters_"+this.selectedWeek.dd+"_"+this.selectedWeek.df+".csv");
+			}).catch(this.$app.catchError).finally(() => this.pending.exportWeek = false);
 		}
 	},
 

@@ -126,7 +126,7 @@ export default {
          */
         pause_end() {
             let df = this.StructureTempsDeclaration.dfp_finale;
-            return df ? this.dateToTime(df, this.StructureTempsDeclaration.dd_finale) : "En cours";
+            return df ? this.dateToTime(df, this.StructureTempsDeclaration.dpd_finale) : "En cours";
         },
 
         /**
