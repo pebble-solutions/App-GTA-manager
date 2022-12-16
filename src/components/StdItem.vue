@@ -39,13 +39,13 @@
             </div>
         </div>
 
-        <div class="my-3" v-if="hasComment">
+        <!-- <div class="my-3" v-if="hasComment">
             <Comment from="Déclarant" v-if="StructureTempsDeclaration.commentaire">{{StructureTempsDeclaration.commentaire}}</Comment>
     
             <Comment form="N+1" v-if="StructureTempsDeclaration.commentaire_n1">{{StructureTempsDeclaration.commentaire_n1}}</Comment>
     
             <Comment form="RH" v-if="StructureTempsDeclaration.commentaire_rh">{{StructureTempsDeclaration.commentaire_rh}}</Comment>
-        </div>
+        </div> -->
     </div>
 </template>
 
@@ -87,7 +87,7 @@
 <script>
 
 import { sqlDateToIso, padTime, calculateDiffDate } from '../js/date'
-import Comment from './Comment.vue';
+// import Comment from './Comment.vue';
 
 export default {
     props: {
@@ -138,15 +138,15 @@ export default {
             return diff;
         },
 
-        /**
-         * Contrôle si la déclaration a au minimum un commentaire.
-         * 
-         * @returns {boolean}
-         */
-        hasComment() {
-            let std = this.StructureTempsDeclaration;
-            return (std.commentaire && std.commentaire_n1 && std.commentaire_rh);
-        }
+        // /**
+        //  * Contrôle si la déclaration a au minimum un commentaire.
+        //  * 
+        //  * @returns {boolean}
+        //  */
+        // hasComment() {
+        //     let std = this.StructureTempsDeclaration;
+        //     return (std.commentaire && std.commentaire_n1 && std.commentaire_rh);
+        // }
     },
     methods: {
         /**
@@ -169,6 +169,6 @@ export default {
             return str;
         }
     },
-    components: { Comment }
+    // components: { Comment }
 }
 </script>

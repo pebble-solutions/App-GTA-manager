@@ -34,7 +34,7 @@
             ></Summary>
         </template>
 
-        <tr v-if="personnel" class="text-center personnel-periodes">
+        <tr v-if="personnel" class="personnel-periodes">
 
             <td class="col-day"></td>
 

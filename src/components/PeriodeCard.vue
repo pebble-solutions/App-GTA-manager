@@ -18,9 +18,11 @@
                     <i class="bi bi-lock-fill"></i> Période traitée.
                 </div>
 
-                {{periode.commentaire}}
+                <!-- {{periode.commentaire}} -->
 
                 <StdItem v-for="std in periode.structure_temps_declarations" :key="'std-item-'+std.id" :StructureTempsDeclaration="std" ></StdItem>
+
+                <Comments v-if="hasComment" :ressource="periode"></Comments>
 
                 <div class="mt-3 mb-2">
                     <strong>Déclarations</strong>
@@ -77,6 +79,7 @@ import {calculateDiffDate} from '@/js/date.js';
 import StdItem from './StdItem.vue';
 import GtaDeclarationItem from './GtaDeclarationItem.vue';
 import PeriodeCardHeader from './PeriodeCardHeader.vue';
+import Comments from './Comments.vue';
 
 export default {
     props: {
@@ -90,7 +93,8 @@ export default {
         return {
             showDetails: false,
             validate: false,
-            selected: false
+            selected: false,
+            hasComment: true
         };
     },
 
@@ -188,7 +192,7 @@ export default {
          */
         editable() {
             return (this.periode.traiter !== "OUI");
-        }
+        },
     },
 
     methods: {
@@ -206,7 +210,7 @@ export default {
         
     },
 
-    components: { StdItem, GtaDeclarationItem, PeriodeCardHeader },
+    components: { StdItem, GtaDeclarationItem, PeriodeCardHeader, Comments },
 
     updated() {
         this.$emit('change');
