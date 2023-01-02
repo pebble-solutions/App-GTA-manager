@@ -28,6 +28,10 @@
                 C'est une pause. <span class="form-text">Une pause sera automatiquement ajoutée aux pointages partiellement ou totalement
                     réalisés sur cette période.
                 </span>
+                <div class="text-warning form-text" v-if="opened_time_control.break">
+                    <i class="bi bi-exclamation-circle-fill"></i> Le système enregistrera une pause maximum par période de pointage. Consultez 
+                    la documentation sur les limitations liées aux pauses pour plus d'information.
+                </div>
             </label>
         </div>
 
@@ -134,6 +138,12 @@
             le personnel pointera sur les horaires déterminées par les conditions de l'action.
         </p>
 
+        <alert-message icon="bi-exclamation-circle-fill" variant="warning" v-if="pauseConditionsNum > 1">
+            <div>Il y a <strong>{{pauseConditionsNum}} actions pouvant générer des pauses</strong>. Cela est possible mais notez que une seule pause peut être
+            enregistrée par période de pointage. Si les conditions de plusieurs pauses sont remplie pour une période de pointage, la première 
+            condition sera retenue, les autres seront ignorées.</div>
+        </alert-message>
+
         <table class="table" v-if="time_controls.length">
             <thead class="table-light">
                 <tr>
@@ -187,8 +197,10 @@
 
 <script>
 import { mapActions, mapState } from 'vuex';
+import AlertMessage from './pebble-ui/AlertMessage.vue';
 
 export default {
+  components: { AlertMessage },
     data() {
         return {
             time_controls: [],
@@ -207,7 +219,17 @@ export default {
     },
 
     computed: {
-        ...mapState(['gta_codages'])
+        ...mapState(['gta_codages']),
+
+        /**
+         * Retourne le nombre de time controls générant des pauses.
+         * 
+         * @return {number}
+         */
+        pauseConditionsNum() {
+            let tc = this.time_controls.filter(e => e.break);
+            return tc.length;
+        }
     },
 
     methods: {

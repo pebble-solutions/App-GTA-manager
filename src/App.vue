@@ -233,7 +233,7 @@ export default {
 				let today = new Date();
 				let year = today.getFullYear();
 
-				let currentWeek = parseInt(`${year}${this.getWeekNumber(today)}`);
+				let currentWeek = parseInt(`${year}${String(this.getWeekNumber(today)).padStart(2, "0")}`);
 				this.currentWeek = currentWeek;
 				let start = this.weekCalcul(this.currentWeek, 'less', 5);
 				let end = this.weekCalcul(this.currentWeek, 'add', 2);
