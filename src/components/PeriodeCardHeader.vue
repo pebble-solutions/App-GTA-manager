@@ -1,5 +1,5 @@
 <template>
-    <div class="card-header" :class="headerClass">
+    <div class="card-header text-center" :class="headerClass">
         <i class="bi bi-lock-fill float-start" v-if="!selectable"></i>
         <i :class="headerIcon" v-if="headerIcon"></i> {{headerLabel}}
     </div>
