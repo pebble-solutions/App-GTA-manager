@@ -163,7 +163,6 @@ export default {
 
 			currentWeek: null,
 			interval: [0, 0],
-			//semaines: null,
 			searchDate: null,
 
 			personnelsIdsSelection: [],
