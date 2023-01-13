@@ -4,12 +4,13 @@
 		:cfg="cfg"
 		:cfg-menu="cfgMenu"
 		:cfg-slots="cfgSlots"
+		:sidebar-menu="appMenu"
 		
 		@auth-change="setLocal_user"
 		@config-menu="displayConfig = true">
 
 		<template v-slot:header>
-			<div class="mx-2 d-flex align-items-center">
+			<div class="mx-2 d-flex align-items-center" v-if="currentWeek">
 				<button class="btn btn-dark me-3" type="button" @click.prevent="displayPersonnelFilter = true">
 					<i class="bi bi-people-fill me-1" :class="{'text-warning': selectedPersonnels.length}"></i>
 					<span v-if="selectedPersonnels.length" class="text-warning">{{selectedPersonnels.length}} sélectionnés</span>
@@ -69,7 +70,7 @@
 
 		<template v-slot:core v-if="isConnectedUser">
 			<div class="bg-light">
-				<router-view :cfg="cfg" :semaine="selectedWeek" v-if="isConnectedUser && selectedWeek" />
+				<router-view :cfg="cfg" :semaine="selectedWeek" v-if="isConnectedUser" />
 			</div>
 
 			<AppModal className="modal-dialog-scrollable" title="Filtrer le personnel" 
@@ -168,7 +169,21 @@ export default {
 			personnelsIdsSelection: [],
 			displayPersonnelFilter: false,
 
-			displayConfig: false
+			displayConfig: false,
+			appMenu: [
+				{
+					label: 'Déclarations personnel',
+					icon: 'bi bi-calendar-week-fill',
+					key: 'week',
+					href: '/'
+				},
+				{
+					label: 'Export',
+					icon: 'bi bi-cloud-download-fill',
+					key: 'export',
+					href: '/export'
+				}
+			]
 		}
 	},
 
@@ -192,8 +207,8 @@ export default {
 	},
 	
 	watch: {
-		'$route'(to) {
-			this.currentWeek = to.params.id;
+		'$route' (to) {
+				this.currentWeek = to.params.id;
 		}
 	},	
 

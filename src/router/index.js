@@ -25,6 +25,11 @@ const routes = [
             }
         ]
     },
+    {
+        path: '/export',
+        name: 'Export',
+        component: () => import('../views/Export.vue'),
+    }
 
   // {
   //   path: '/about',
