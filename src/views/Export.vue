@@ -53,10 +53,16 @@ export default {
         doExport() {
             this.pending.export = true;
 
+            let fileName = "counters_";
+            if (this.exportQuery.structure__personnel_id) {
+                fileName += this.exportQuery.structure__personnel_id+"_";
+            }
+            fileName += this.exportQuery.dd+"_"+this.exportQuery.df+".csv";
+
 			this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', this.exportQuery, {
 				responseType: 'blob'
 			}).then(data => {
-				FileDownload(data, "counters_"+this.exportQuery.dd+"_"+this.exportQuery.df+".csv");
+				FileDownload(data, fileName);
 			}).catch(this.$app.catchError).finally(() => this.pending.export = false);
         }
     },

@@ -2,12 +2,12 @@
     <div class="row g-3 mb-3">
         <div class="col">
             <label for="export_dd" class="form-label">Date de début</label>
-            <input type="date" class="form-control" id="export_dd" :value="dd" @input="changeVal('dd', $event)">
+            <input type="date" class="form-control" id="export_dd" :value="dd" @input="changeVal('dd', $event)" required>
         </div>
 
         <div class="col">
             <label for="export_df" class="form-label">Date de fin</label>
-            <input type="date" class="form-control" id="export_df" :value="df" @input="changeVal('df', $event)">
+            <input type="date" class="form-control" id="export_df" :value="df" @input="changeVal('df', $event)" required>
         </div>
     </div>
 
@@ -23,11 +23,13 @@
         <label for="export_structure__personnel_id" class="form-label">Personnel</label>
         <select name="structure__personnel_id" id="export_structure__personnel_id" class="form-select" :value="structure__personnel_id" @change="changeVal('structure__personnel_id', $event)">
             <option value="">Tous</option>
+            <option :value="personnel.id" v-for="personnel in personnels" :key="personnel.id">{{ personnel.cache_nom }}</option>
         </select>
     </div>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 
 export default {
     props: {
@@ -38,6 +40,10 @@ export default {
     },
 
     emits: ['update:dd', 'update:df', 'update:type', 'update:structure__personnel_id'],
+
+    computed: {
+        ...mapState(['personnels'])
+    },
 
     methods: {
         /**

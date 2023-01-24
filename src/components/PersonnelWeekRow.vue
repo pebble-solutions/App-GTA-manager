@@ -67,6 +67,7 @@
 </style>
 
 <script>
+
 import Summary from '@/components/Summary.vue';
 import PersonnelBadge from './PersonnelBadge.vue';
 import { mapActions, mapState } from 'vuex';

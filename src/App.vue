@@ -20,11 +20,7 @@
 					Sem. {{getWeekNumber(new Date(selectedWeek.dd))}} : <DateInterval :dd="selectedWeek.dd" :df="selectedWeek.df"></DateInterval>
 				</div>
 
-				<button class="btn btn-dark mx-3" type="button" @click.prevent="exportWeek()">
-					<i class="bi bi-cloud-download-fill me-1" v-if="!pending.exportWeek"></i>
-					<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" v-else></span>
-					<span>Exporter</span>
-				</button>
+				<week-tools-dropdown />
 			</div>
 		</template>
 
@@ -144,7 +140,8 @@ import AppModal from './components/pebble-ui/AppModal.vue'
 import PersonnelFilter from './components/PersonnelFilter.vue'
 import Config from './components/Config.vue'
 
-import FileDownload from 'js-file-download'
+import { getWeekFromYW } from './js/week'
+import WeekToolsDropdown from './components/WeekToolsDropdown.vue'
 
 export default {
 
@@ -157,8 +154,7 @@ export default {
 				semaines: true,
 				moreWeeks: false,
 				personnels: true,
-				config: true,
-				exportWeek: false
+				config: true
 			},
 			isConnectedUser: false,
 
@@ -196,13 +192,7 @@ export default {
 		 * @returns {Object}
 		 */
 		selectedWeek() {
-			let week=null;
-
-			if(this.semaines.length > 0) {
-				week = this.semaines.find((e) => `${e.year}${e.week}` == this.currentWeek);
-			}
-
-			return week;
+			return getWeekFromYW(this.currentWeek, this.semaines);
 		}
 	},
 	
@@ -500,27 +490,12 @@ export default {
 
 			this.$app.apiGet('gtaDeclaration/GET/config')
 			.then(data => this.setConfigGta(data)).catch(this.$app.catchError).finally(() => this.pending.config = false);
-		},
-
-		/**
-		 * Lance l'export des données de la semaine ouverte
-		 */
-		exportWeek() {
-			this.pending.exportWeek = true;
-
-			this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', {
-                dd: this.selectedWeek.dd,
-                df: this.selectedWeek.df
-            }, {
-				responseType: 'blob'
-			}).then(data => {
-				FileDownload(data, "counters_"+this.selectedWeek.dd+"_"+this.selectedWeek.df+".csv");
-			}).catch(this.$app.catchError).finally(() => this.pending.exportWeek = false);
 		}
 	},
 
 	components: {
-		AppWrapper, AppMenu, AppMenuItem, WeekListItem, Spinner, Datepicker, DateInterval, AppModal, PersonnelFilter, Config
+		AppWrapper, AppMenu, AppMenuItem, WeekListItem, Spinner, Datepicker, DateInterval, AppModal, PersonnelFilter, Config,
+WeekToolsDropdown
 	},
 
 	mounted() {
