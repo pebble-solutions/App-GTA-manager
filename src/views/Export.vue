@@ -1,12 +1,12 @@
 <template>
-    <app-modal title="Exporter"
+    <app-modal :title="titleModal"
         id="export"
         :close-btn="true"
         :submit-btn="true"
         submit-label="Exporter"
         :pending="pending.export"
         
-        @modal-hide="routeToHome()"
+        @modal-hide="routeToParent()"
         @submit="doExport()"
         >
 
@@ -40,11 +40,12 @@ export default {
     },
 
     methods: {
-        /**
-         * Retourne à l'accueil
+         /**
+         * retourne à la route précédente
+         * 
          */
-        routeToHome() {
-            this.$router.push('/')
+         routeToParent() {
+            this.$router.go(-1);
         },
 
         /**
@@ -58,16 +59,25 @@ export default {
                 fileName += this.exportQuery.structure__personnel_id+"_";
             }
             fileName += this.exportQuery.dd+"_"+this.exportQuery.df+".csv";
-
-			this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', this.exportQuery, {
-				responseType: 'blob'
-			}).then(data => {
-				FileDownload(data, fileName);
-			}).catch(this.$app.catchError).finally(() => this.pending.export = false);
+    
+            this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', this.exportQuery, {
+                responseType: 'blob'
+            }).then(data => {
+                FileDownload(data, fileName);
+            }).catch(this.$app.catchError).finally(() => this.pending.export = false, this.routeToParent());
         }
     },
 
     components: { ExportOptions, AppModal },
+    computed:{
+        titleModal(){
+            if(this.$route.path == '/export'){
+                return 'Exporter'
+            }else{
+                return 'Exporter semaine '+ this.$route.params.id.slice(4)+' (' + this.$route.params.id.slice(0,4) +')'
+            }
+        }
+    }
 }
 
 </script>

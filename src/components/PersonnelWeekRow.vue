@@ -6,11 +6,14 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <PersonnelBadge :personnel="personnel"></PersonnelBadge>
                     <div>
-                        <button class="btn btn-light btn-sm me-1" type="button" @click.prevent="exportPersonnel()">
-                            <i class="bi bi-cloud-download me-1" v-if="!pending.export"></i>
-                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" v-else></span>
-                            <span>Exporter</span>
-                        </button>
+                        <router-link :to="'/week/'+$route.params.id+'/export/personnel/'+personnel.id" v-slot="{href, navigate}" custom>
+                            <a :href="href" @click="actionOnClick(navigate)" class="btn btn-light btn-sm me-1" type="button">
+                                <i class="bi bi-cloud-download me-1" v-if="!pending.export"></i>
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" v-else></span>
+                                <span>Exporter</span>
+                            </a> 
+                        </router-link>
+
                         <router-link :to="'/week/'+$route.params.id+'/data/personnel/'+personnel.id" v-slot="{href, navigate}" custom>
                             <a :href="href" @click="navigate" class="btn btn-sm btn-light" title="Afficher la source des données">
                                 <i class="bi bi-database"></i>
@@ -72,9 +75,7 @@ import Summary from '@/components/Summary.vue';
 import PersonnelBadge from './PersonnelBadge.vue';
 import { mapActions, mapState } from 'vuex';
 import PeriodeCard from './PeriodeCard.vue';
-import FileDownload from 'js-file-download';
 import { toSqlDate } from '../js/date';
-
 export default {
     props: {
         personnel: Object,
@@ -101,10 +102,10 @@ export default {
         }
     },
 
-    components: { Summary, PersonnelBadge, PeriodeCard },
+    components: { Summary, PersonnelBadge, PeriodeCard},
 
     methods: {
-        ...mapActions(['refreshPersonnelGtaPeriodes']),
+        ...mapActions(['refreshPersonnelGtaPeriodes']), 
 
         /**
          * Renvoi un tableau summary avec juste les informations qui nous interesse et non null
@@ -161,23 +162,6 @@ export default {
         },
 
         /**
-         * Exporte les compteurs du personnel sur le semaine en cours
-         */
-        exportPersonnel() {
-            this.pending.export = true;
-
-			this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', {
-                dd: this.semaine.dd,
-                df: this.semaine.df,
-                structure__personnel_id: this.personnel.id
-            }, {
-				responseType: 'blob'
-			}).then(data => {
-				FileDownload(data, "counters_"+this.personnel.id+"_"+this.semaine.dd+"_"+this.semaine.df+".csv");
-			}).catch(this.$app.catchError).finally(() => this.pending.export = false);
-        },
-
-        /**
          * Crée une nouvelle période sur la journée sélectionnée et reroute sur la configuration de la période
          * 
          * @param {Date} date         Date SQL
@@ -191,6 +175,11 @@ export default {
                 this.refreshPersonnelGtaPeriodes([periode]);
                 this.$router.push(`/week/${this.semaine.year}${this.semaine.week}/periode/${periode.id}`);
             }).catch(this.$app.catchError);
+        },
+
+        actionOnClick(navigate){
+            //this.pending.export = !this.pending.export
+            return navigate
         }
     }
 }

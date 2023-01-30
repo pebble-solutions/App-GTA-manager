@@ -12,6 +12,7 @@
 </template>
 
 <script>
+
 import StackedBar from '@/components/pebble-ui/charts/StackedBar.vue';
 import DateInterval from './DateInterval.vue';
 

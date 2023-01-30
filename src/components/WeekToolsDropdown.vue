@@ -6,11 +6,21 @@
         </button>
         <ul class="dropdown-menu">
             <li>
-                <button class="dropdown-item" type="button" @click.prevent="exportWeek()">
-                    <i class="bi bi-cloud-download-fill me-1" v-if="!pending.exportWeek"></i>
-                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" v-else></span>
-                    <span>Exporter</span>
-                </button>
+                <router-link :to="'/week/'+$route.params.id+'/insert'" v-slot="{href, navigate}" custom>
+                    <a :href="href" @click="navigate" class="dropdown-item" type="button" >
+                        <i class="bi bi-plus me-1" v-if="!pending.exportWeek"></i>
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" v-else></span>
+                        <span>Créer une période</span>
+                    </a> 
+                </router-link>
+                <router-link :to="'/week/'+$route.params.id+'/export'" v-slot="{href, navigate}" custom>
+                    <a :href="href" @click="navigate" class="dropdown-item" type="button" >
+                        <i class="bi bi-cloud-download me-1" v-if="!pending.exportWeek"></i>
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" v-else></span>
+                        <span>Exporter</span>
+                    </a> 
+                </router-link>
+
             </li>
         </ul>
     </div>
@@ -18,7 +28,6 @@
 
 <script>
 
-import FileDownload from 'js-file-download';
 import { getWeekFromYW } from '../js/week';
 import { mapState } from 'vuex';
 
@@ -56,24 +65,6 @@ export default {
             return getWeekFromYW(this.$route.params.id, this.semaines)
         }
     },
-
-    methods: {
-        /**
-		 * Lance l'export des données de la semaine ouverte
-		 */
-		exportWeek() {
-			this.pending.exportWeek = true;
-
-			this.$app.apiGet('gtaPeriode/GET/exportCounters.csv', {
-                dd: this.selectedWeek.dd,
-                df: this.selectedWeek.df
-            }, {
-				responseType: 'blob'
-			}).then(data => {
-				FileDownload(data, "counters_"+this.selectedWeek.dd+"_"+this.selectedWeek.df+".csv");
-			}).catch(this.$app.catchError).finally(() => this.pending.exportWeek = false);
-		}
-    }
 }
 
 </script>

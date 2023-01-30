@@ -22,12 +22,29 @@ const routes = [
                 path: 'data/personnel/:idPersonnel',
                 name: "DataPersonnel",
                 component: () => import('../views/Data.vue')
+            },
+            {
+                path: 'insert',
+                name: "InsertPeriode", //changer
+                component: () => import('../views/Insert.vue')
+            },
+            {
+                path: 'export',
+                name: "ExportWeek",//changer
+                component: () => import('../views/Export.vue'),
+                children: [
+                    {
+                        path: 'personnel/:idPersonnel',
+                        name: "ExportPersonnel",//changer
+                        component: () => import('../views/Export.vue')
+                    }
+                ]
             }
         ]
     },
     {
         path: '/export',
-        name: 'Export',
+        name: 'ExportAll',
         component: () => import('../views/Export.vue'),
     }
 

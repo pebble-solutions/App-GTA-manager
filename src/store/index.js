@@ -206,7 +206,7 @@ export default createStore({
 
 		/**
 		 * Met à jour des GtaPeriodes sur le personnel stocké dans le store. Si la GtaPeriode n'existe pas 
-		 * sur le personnel, elle est ajouter grâce au structure__personnel_id
+		 * sur le personnel, elle est ajoutée grâce au structure__personnel_id
 		 * @param {Object} state Le state de VueX
 		 * @param {Array} gta_periodes Collection de gta_periodes à mettre à jour
 		 */
@@ -230,7 +230,7 @@ export default createStore({
 		},
 
 		/**
-		 * Rempplace, ajoute a la fin ou au debut du tableau les semaines analytics
+		 * Remplace, ajoute a la fin ou au debut du tableau les semaines analytics
 		 * @param {Object} state Le state de vueX
 		 * @param {Array} optionsSemaines 
 		 * 		- semaines {Array}			Collection de semaines analytics
