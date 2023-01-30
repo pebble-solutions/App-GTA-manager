@@ -8,7 +8,7 @@
         :pending="pending.insert"
         
         @modal-hide="routeToParent()"
-        @submit="createPeriode(newDate)"
+        @submit="createPeriode()"
         >
 
         <insert-options
@@ -29,7 +29,7 @@ export default {
     data() {
         return {
             structure__personnel_id: null,
-            newDate: null,
+            newDate: new Date(),
             semaine: null,
             pending: {
                 insert: false
@@ -47,22 +47,19 @@ export default {
 
          /**
          * Retourne à la route précédente
-         * 
          */
-         routeToParent() {
+        routeToParent() {
             this.$router.go(-1);
         },
 
          /**
          * Crée une nouvelle période sur la journée sélectionnée et reroute sur la configuration de la période
-         * 
-         * @param {Date} newDate
          */
-         createPeriode(newDate) {
+        createPeriode() {
             this.pending.insert = true;
             let currentPeriodeId;
             this.$app.apiPost('structurePersonnel/POST/'+this.structure__personnel_id+'/createGtaPeriode', {
-                date: toSqlDate(newDate)
+                date: toSqlDate(this.newDate)
             }).then((periode) => {
                 let personnel = this.personnelsDeclarations.find(e => e.id == this.structure__personnel_id);
                 currentPeriodeId = periode.id;
@@ -88,9 +85,9 @@ export default {
         },
 
         /**
-         * Retourne la valeur de la semaine actuelle
-         * 
-        */
+         * Retourne la semaine active dans l'URL
+         * @return {object}
+         */
         getCurrentSemaine() {
             const week = this.$route.params.id.slice(4);
             const year = this.$route.params.id.slice(0,4);
