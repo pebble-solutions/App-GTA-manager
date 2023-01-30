@@ -5,7 +5,7 @@
         :submit-btn="true"
         submit-label="Créer"
         close-label='Annuler'
-        :pending="pending.export"
+        :pending="pending.insert"
         
         @modal-hide="routeToParent()"
         @submit="createPeriode(newDate)"
@@ -32,7 +32,7 @@ export default {
             newDate: null,
             semaine: null,
             pending: {
-                export: false
+                insert: false
             }
         }
     },
@@ -46,7 +46,7 @@ export default {
         ...mapActions(['refreshPersonnelGtaPeriodes', 'addPersonnel']),
 
          /**
-         * retourne à la route précédente
+         * Retourne à la route précédente
          * 
          */
          routeToParent() {
@@ -56,13 +56,16 @@ export default {
          /**
          * Crée une nouvelle période sur la journée sélectionnée et reroute sur la configuration de la période
          * 
-         * @param {Date} newDate         Date SQL
+         * @param {Date} newDate
          */
          createPeriode(newDate) {
+            this.pending.insert = true;
+            let currentPeriodeId;
             this.$app.apiPost('structurePersonnel/POST/'+this.structure__personnel_id+'/createGtaPeriode', {
                 date: toSqlDate(newDate)
             }).then((periode) => {
                 let personnel = this.personnelsDeclarations.find(e => e.id == this.structure__personnel_id);
+                currentPeriodeId = periode.id;
                 if (!personnel) {
                     return this.$app.apiGet('structureTempsDeclaration/GET/listDeclarations', {
                         dd: this.semaine.dd,
@@ -75,14 +78,17 @@ export default {
                 } else {
                     periode.structure_temps_declarations = [];
                     periode.gta_declarations = [];
-                    this.$router.push(`/week/${this.semaine.year}${this.semaine.week}/periode/${periode.id}`);
                     return this.refreshPersonnelGtaPeriodes([periode]);
                 }
-            }).catch(this.$app.catchError);
+            }).catch(this.$app.catchError)
+            .finally(() => {
+                this.pending.insert = false;
+                this.$router.push(`/week/${this.semaine.year}${this.semaine.week}/periode/${currentPeriodeId}`);
+            });
         },
 
         /**
-         * Indique a selectedSemaine la valeur de la semaine actuelle
+         * Retourne la valeur de la semaine actuelle
          * 
         */
         getCurrentSemaine() {

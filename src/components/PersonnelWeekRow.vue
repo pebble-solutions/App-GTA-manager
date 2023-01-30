@@ -164,7 +164,7 @@ export default {
         /**
          * Crée une nouvelle période sur la journée sélectionnée et reroute sur la configuration de la période
          * 
-         * @param {Date} date         Date SQL
+         * @param {Date} date
          */
         createPeriode(date) {
             this.$app.apiPost('structurePersonnel/POST/'+this.personnel.id+'/createGtaPeriode', {
@@ -178,7 +178,6 @@ export default {
         },
 
         actionOnClick(navigate){
-            //this.pending.export = !this.pending.export
             return navigate
         }
     }

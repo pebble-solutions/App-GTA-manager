@@ -63,27 +63,12 @@ export default {
         /**
          * Met à jour la date
          * 
-         * @param {*} id Cle du jour de la semaine
+         * @param {number} id Cle du jour de la semaine
          */
         getDate(id){
             let date = new Date(this.semaine.dd);
             date.setDate(date.getDate() + id);
             this.selectedDate = date;
-
-                //     if(semaine.dd.slice(5,7)== '02' && parseInt(semaine.dd.slice(8))+id > 28){
-                //         this.$emit('update:newDate',semaine.dd.slice(0,5)+"0"+(parseInt(semaine.dd.slice(5,7))+1)+"-"+(parseInt(semaine.dd.slice(8))+id-28));
-                //     }else if(parseInt(semaine.dd.slice(8))+id > 31){
-                //         if(parseInt(semaine.dd.slice(5,7)) < 9){
-                //             this.$emit('update:newDate',semaine.dd.slice(0,5)+"0"+(parseInt(semaine.dd.slice(5,7))+1)+"-"+(parseInt(semaine.dd.slice(8))+id-31));
-                //         }else{
-                //             this.$emit('update:newDate',semaine.dd.slice(0,5)+(parseInt(semaine.dd.slice(5,7))+1)+"-"+(parseInt(semaine.dd.slice(8))+id-31));
-                //         }   
-                //         if(parseInt(semaine.dd.slice(5,7)) == 12){
-                //             this.$emit('update:newDate',(parseInt(semaine.dd.slice(0,4))+1)+"-01-"+(parseInt(semaine.dd.slice(8))+id-31))
-                //         }
-                //     }else{
-                //         this.$emit('update:newDate', semaine.dd.slice(0,8)+(parseInt(semaine.dd.slice(8))+id));
-                //     }
         }
     },
     mounted() {
