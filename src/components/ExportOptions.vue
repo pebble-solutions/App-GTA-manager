@@ -81,7 +81,7 @@ export default {
         },
 
         /**
-         * Récupere les ID de chaques semaineset les comparer avec l'id passé en parametre. Renvoie a la bue parents les valeurs de Date de Debut et Date de fin  
+         * Récupere les ID de chaques semaines et les compare avec l'id passé en parametre. Renvoie a la vue parents les valeurs de Date de Debut et Date de fin  
          */
         getPeriode(){
             let id
@@ -96,6 +96,12 @@ export default {
             }
         }
     },
+    
+    mounted() {
+        if (this.$route.path != '/export'){
+            this.getPeriode();
+        }
+    }
 }
 
 </script>
