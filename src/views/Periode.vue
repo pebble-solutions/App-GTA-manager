@@ -42,8 +42,8 @@
 import AppModal from '@/components/pebble-ui/AppModal.vue';
 
 import date from 'date-and-time';
-import StdForm from '../components/StdForm.vue';
-import DeclarationForm from '../components/DeclarationForm.vue';
+import StdForm from '../components/periode/StdForm.vue';
+import DeclarationForm from '../components/periode/DeclarationForm.vue'
 import { mapActions, mapState } from 'vuex';
 
 import {padTime} from '../js/date';

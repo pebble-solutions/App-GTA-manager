@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import InsertOptions from '../components/InsertOptions.vue'
+import InsertOptions from '../components/tools/InsertOptions.vue'
 import AppModal from '../components/pebble-ui/AppModal.vue'
 import { mapActions, mapState } from 'vuex';
 import { toSqlDate } from '../js/date';

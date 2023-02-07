@@ -138,7 +138,7 @@ import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import AppModal from './components/pebble-ui/AppModal.vue'
 import PersonnelFilter from './components/PersonnelFilter.vue'
-import Config from './components/Config.vue'
+import Config from './components/config/Config.vue'
 
 import { getWeekFromYW } from './js/week'
 import WeekToolsDropdown from './components/WeekToolsDropdown.vue'

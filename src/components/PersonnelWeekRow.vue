@@ -74,7 +74,7 @@
 import Summary from '@/components/Summary.vue';
 import PersonnelBadge from './PersonnelBadge.vue';
 import { mapActions, mapState } from 'vuex';
-import PeriodeCard from './PeriodeCard.vue';
+import PeriodeCard from './periode/PeriodeCard.vue';
 import { toSqlDate } from '../js/date';
 export default {
     props: {

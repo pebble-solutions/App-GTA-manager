@@ -351,6 +351,36 @@ export default createStore({
 			else {
 				state.config[key] = config;
 			}
+		},
+
+		/**
+		 * Met à jour la liste des notes sur les gta_periodes du personnel chargé.
+		 * 
+		 * @param {object} state Le state VueX
+		 * @param {object} noteOptions Les options des notes à mettre à jour
+		 * - notes : collection de notes
+		 */
+		periode_notes(state, noteOptions) {
+			let notes = noteOptions.notes;
+
+			state.personnelsDeclarations.forEach(personnel => {
+				personnel.gta_periodes.forEach(periode => {
+					notes.forEach(note => {
+						if (note.tli == periode.id && note.tlc == "GtaPeriode") {
+							let found = periode.notes.find(e => e.id == note.id);
+
+							if (found) {
+								for (const key in note) {
+									found[key] = note[key];
+								}
+							}
+							else {
+								periode.notes.push(note);
+							}
+						}
+					})
+				});
+			});
 		}
 	},
 	actions: {
@@ -666,6 +696,19 @@ export default createStore({
 			context.commit('config', {
 				key: 'gta',
 				config,
+				mode: 'update'
+			});
+		},
+
+		/**
+		 * Met à jour ou ajoute des notes sur une gta_periode déjà chargée dans le store.
+		 * 
+		 * @param {object} context Instance VueX
+		 * @param {array} notes La liste des notes à mettre à jour
+		 */
+		updatePeriodeNotes(context, notes) {
+			context.commit('periode_notes', {
+				notes,
 				mode: 'update'
 			});
 		}

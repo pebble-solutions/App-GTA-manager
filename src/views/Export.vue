@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import ExportOptions from '../components/ExportOptions.vue'
+import ExportOptions from '../components/tools/ExportOptions.vue'
 import AppModal from '../components/pebble-ui/AppModal.vue'
 import FileDownload from 'js-file-download'
 

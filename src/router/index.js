@@ -14,6 +14,11 @@ const routes = [
         component: Week,
         children: [
             {
+                path:'periode/:idPeriode/comments',
+                name: "Comments",
+                component: () => import('../views/Comments.vue'),
+            },
+            {
                 path:'periode/:idPeriode/',
                 name: "EditPointage",
                 component: () => import('../views/Periode.vue'),
@@ -25,17 +30,17 @@ const routes = [
             },
             {
                 path: 'insert',
-                name: "InsertPeriode", //changer
+                name: "InsertPeriode",
                 component: () => import('../views/Insert.vue')
             },
             {
                 path: 'export',
-                name: "ExportWeek",//changer
+                name: "ExportWeek",
                 component: () => import('../views/Export.vue'),
                 children: [
                     {
                         path: 'personnel/:idPersonnel',
-                        name: "ExportPersonnel",//changer
+                        name: "ExportPersonnel",
                         component: () => import('../views/Export.vue')
                     }
                 ]
