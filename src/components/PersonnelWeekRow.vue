@@ -21,7 +21,7 @@
                         </router-link>
                     </div>
                 </div>
-            </td>
+            </td> 
         </tr>
 
         <template v-if="summary.length != 0">

@@ -1,17 +1,17 @@
 <template>
-    <tr class="text-center" >
+    <tr class="text-center" v-if="!resume">
 
         <td class="text-start">
-            <span v-if="frSummary[resume]">{{frSummary[resume]}}</span>
+            <span v-if="frSummary[resume]">{{ frSummary[resume] }}</span>
             <span v-else>{{resume}}</span>
         </td>
 
-        <td v-for="day in weekDays" :key="'th-'+day">
-            {{valueSummaryDay(personnel.counters.days_summary, day, resume)}}
+        <td v-for="day in weekDays" :key="'th-'+ day">
+            {{ valueSummaryDay(personnel.counters.days_summary, day, resume) }}
         </td>
 
         <td>
-            {{valueSummaryWeek(personnel.counters.weeks_summary[yearWeek], resume)}}
+            {{ valueSummaryWeek(personnel.counters.weeks_summary[yearWeek], resume) }}
         </td>
     </tr>
 </template>
@@ -64,9 +64,9 @@ export default {
         valueSummaryWeek(summaryWeek, summaryKey) {
             let codage = this.gta_codages.find(e => e.nom == summaryKey);
 
-            if(codage) {
+            if (codage) {
                 return this.twoDigitAfterComma(summaryWeek.gta_declarations[codage.id]);
-            } 
+            }
 
             return this.twoDigitAfterComma(summaryWeek[summaryKey]);
             
@@ -102,6 +102,7 @@ export default {
 
         /**
          * Retourn le chiffre a 2 chiffre apres la virgule ex: 5.62
+         * 
          * @param {Number} number
          * 
          * @return {Number}
