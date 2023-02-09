@@ -1,15 +1,15 @@
 <template>
 
     <div>
-        <form v-if="createForm" @submit.prevent="createCommentaire()">
-            <EditNote 
-                v-model:commentValue="commentValue"
-                v-model:confValue="confValue"
-                :pending="pending.comm"
-                @cancel="createForm = !createForm"
-            />
+        <EditNote 
+            :id-note="0"
+            :periode="periode"
 
-        </form>
+            @cancel="exitForm()"
+            @sent="exitForm()"
+
+            v-if="createForm"
+        />
 
         <div class="d-grid gap-2 col-6 mx-auto" v-else>
             <button class="btn btn-primary" type="button" @click.prevent="createForm = !createForm" > + Nouveau</button>
@@ -21,7 +21,7 @@
 
     <div class=" list-group list-group-flush container">
         <div v-for="note in notes" :key="'note-'+note.id" class="list-group-item" :class="getNoteClass(note)">
-            <Comment :note="note" :periode_id="this.periode.id"/>
+            <Comment :note="note" :periode="periode"/>
         </div> 
     </div>
 
@@ -30,7 +30,6 @@
 
 <script>
 
-import { mapActions } from 'vuex';
 import Comment from './Comment.vue';
 import EditNote from './NoteForm.vue';
 
@@ -42,12 +41,7 @@ export default {
     data() {
         return {
             createForm: false,
-            commentValue: null,
-            confValue:false,
-            pending: {
-                comm: false
-            }
-        };
+        }
     },
 
     computed: {
@@ -60,44 +54,7 @@ export default {
         }
     },
 
-    watch: {
-        createForm(newVal) {
-            if (newVal == false) {
-                this.commentValue = null;
-            }
-        },
-        confValue(newVal) {
-            if(newVal === false){
-                this.confValue="NON";
-            }
-        }
-    },
-
     methods: {
-
-        ...mapActions(['updatePeriodeNotes']),
-
-        /**
-         * Créer un nouveau commentaire a partir de la requette d'API
-         *
-         */
-         createCommentaire() {
-            let confidentiel = "NON";
-            if (this.confValue == true) {
-                confidentiel = "OUI";
-            }
-            this.pending.comm = true;
-            this.$app.apiPost("gtaPeriode/POST/" + this.periode.id + "/note", {
-                note: this.commentValue,
-                confidentielle: confidentiel,
-            }).then((note) => {
-                this.updatePeriodeNotes([note]);
-            }).catch(this.$app.catchError)
-            .finally(() => {
-                this.pending.comm = false;
-                this.createForm = !this.createForm;
-            });
-        },
 
         /**
          * Retourne la liste des classe cssen fonction de l'etat de la note
@@ -112,6 +69,13 @@ export default {
                 className += 'bg-primary text-dark bg-opacity-10';
             }
             return className
+        },
+
+        /**
+         * Ferme le formulaire d'ajout de commentaire
+         */
+        exitForm() {
+            this.createForm = false;
         }
 
     },

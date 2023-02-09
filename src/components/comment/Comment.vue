@@ -2,17 +2,18 @@
 
     <div class="d-flex align-items-start" >
         <UserImage :name="note.login_pseudo" size="user-image-lg" className="me-2" />
-
-        <form class="w-100" v-if="modifiable == note.id && !showDetails" @submit.prevent="modifierCommentaire(note.id)" >
         
-            <EditNote 
-                v-model:commentValue="commentValue"
-                v-model:confValue="confValue"
-                :pending="pending.comm"
-                @cancel="modifiable = null"
-            />
+        <EditNote 
+            :commentValue="note.note"
+            :confidentielleValue="note.confidentielle"
+            :id-note="note.id"
+            :periode="periode"
 
-        </form>
+            @cancel="modifiable = null"
+            @sent="modifiable = null"
+
+            v-if="modifiable == note.id"
+        />
 
         <div class="w-100 d-flex justify-content-between" v-else>
             <div>
@@ -34,61 +35,21 @@
 <script>
 
 import UserImage from '../pebble-ui/UserImage.vue'
-import { mapActions } from 'vuex';
 import EditNote from './NoteForm.vue';
 
 export default {
         props: {
             note: Object,
-            periode_id:Number,
+            periode:Object,
         },
 
         data() {
             return {
-                modifiable: null,
-                showDetails: false,
-                commentValue: null,
-                confValue: false,
-                pending: {
-                    comm: false
-                }
+                modifiable: null
             };
         },
 
-        watch: {
-            showDetails(newVal) {
-                if (newVal == false) {
-                    this.commentValue = null;
-                }
-            }
-        },
-
         methods: {
-
-            ...mapActions(['updatePeriodeNotes']),
-
-            /**
-             * Modifie un commentaire a partir de la requette d'API
-             * 
-             * @param {number} id
-             */
-            modifierCommentaire(id) {
-                let confidentiel = "NON";
-                if (this.confValue == true) {
-                    confidentiel = "OUI";
-                }
-                this.pending.comm = true;
-                this.$app.apiPost("gtaPeriode/POST/" + this.periode_id + "/note/" + id, {
-                    note: this.commentValue,
-                    confidentielle: confidentiel,
-                }).then((note) => {
-                    this.updatePeriodeNotes([note]);
-                }).catch(this.$app.catchError)
-                .finally(() => {
-                    this.pending.comm = false;
-                    this.modifiable = null;
-                });
-            },
 
             /**
              * Retourne la date lisible pour l'affichage
@@ -109,14 +70,6 @@ export default {
              */
             modifAction(note){
                 this.modifiable = note.id;
-                this.commentValue = note.note;
-                this.confidentielle = note.confidentielle;
-
-                if (note.confidentielle == "OUI") {
-                    this.confValue = true;
-                }else {
-                    this.confValue = false;
-                }
             }
         },
         
