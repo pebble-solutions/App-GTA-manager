@@ -1,5 +1,5 @@
 <template>
-    <tr class="text-center" v-if="!resume">
+    <tr class="text-center">
 
         <td class="text-start">
             <span v-if="frSummary[resume]">{{ frSummary[resume] }}</span>
