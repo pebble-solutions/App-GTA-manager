@@ -185,14 +185,13 @@ export default {
         loadDeclarations() {
             let apiUrl = 'structureTempsDeclaration/GET/listDeclarations';
 
-            this.pending.week = false;
+            this.pending.week = true;
 
             this.$app.apiGet(apiUrl, this.declarationQuery)
             .then( (data) => {
                 this.setPersonnel(data.personnels);
-                this.pending.week = false
             })
-            .catch(this.$app.catchError).finally(this.pending.week = true);
+            .catch(this.$app.catchError).finally(this.pending.week = false);
         },
 
 
