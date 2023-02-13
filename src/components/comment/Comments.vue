@@ -21,7 +21,8 @@
 
     <div class=" list-group list-group-flush container">
         <div v-for="note in notes" :key="'note-'+note.id" class="list-group-item" :class="getNoteClass(note)">
-            <Comment :note="note" :periode="periode"/>
+            <CommentNote :note="note" v-if="note.type === 'note'"/>
+            <Comment :note="note" :periode="periode" v-else/>
         </div> 
     </div>
 
@@ -32,6 +33,7 @@
 
 import Comment from './Comment.vue';
 import EditNote from './NoteForm.vue';
+import CommentNote from './CommentNote.vue';
 
 export default {
     props: {
@@ -66,7 +68,9 @@ export default {
         getNoteClass(note) {
             let className = '';
             if (note.isMine) {
-                className += 'bg-primary text-dark bg-opacity-10';
+                if (note.type !== 'note') {
+                    className += 'bg-primary text-dark bg-opacity-10';
+                }
             }
             return className
         },
@@ -79,7 +83,7 @@ export default {
         }
 
     },
-    components: {Comment, EditNote}
+    components: {Comment, EditNote, CommentNote}
 }
 
 </script>

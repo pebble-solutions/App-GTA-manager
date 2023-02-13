@@ -16,7 +16,7 @@
         <label for="export_type" class="form-label">Type d'export</label>
         <select name="type" id="export_type" class="form-select" :value="type" @change="changeVal('type', $event)">
             <option value="group">Export groupé des compteurs</option>
-            <!--<option value="list">Export des déclarations en liste</option>-->
+            <option value="list">Export des déclarations en liste</option>
         </select>
     </div>
 

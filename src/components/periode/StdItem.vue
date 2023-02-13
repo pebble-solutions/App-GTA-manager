@@ -1,6 +1,8 @@
 <template>
     <div>
-
+        <div class="alert alert-primary text-center" v-if="StdDiff">
+            {{ StdDiff.true }}
+        </div>
         <div class="timeline">
             <div class="timeline-item fs-6"   v-if="StructureTempsDeclaration.dd != StructureTempsDeclaration.dd_finale">
                 <span class="timeline-icon text-secondary"><i class="bi bi-exclamation-diamond"></i></span>
@@ -81,6 +83,11 @@
 import { sqlDateToIso, padTime, calculateDiffDate } from '../../js/date'
 
 export default {
+    data(){
+        return{
+            MODULE_PAIE_DATE_DELTA_WARNING: 15
+        };
+    },
     props: {
         StructureTempsDeclaration: Object
     },
@@ -127,6 +134,21 @@ export default {
         pause_duration() {
             let diff = calculateDiffDate(this.StructureTempsDeclaration.dpd_finale, this.StructureTempsDeclaration.dfp_finale);
             return diff;
+        }, 
+
+        StdDiff() {
+            let dd = new Date(this.StructureTempsDeclaration.dd)
+            let dd_finale = new Date(this.StructureTempsDeclaration.dd_finale)
+            let df = new Date(this.StructureTempsDeclaration.df)
+            let df_finale = new Date(this.StructureTempsDeclaration.df_finale)
+
+            if ((dd_finale.valueOf() - dd.valueOf()) > (this.MODULE_PAIE_DATE_DELTA_WARNING * 60000)) {
+                return {true : this.StructureTempsDeclaration.dd_finale.slice(10)}
+            } else if ((df_finale.valueOf() - df.valueOf()) > (this.MODULE_PAIE_DATE_DELTA_WARNING * 60000)) {
+                return {true : this.StructureTempsDeclaration.df_finale.slice(10)}
+            } else {
+                return false
+            }
         }
     },
     methods: {

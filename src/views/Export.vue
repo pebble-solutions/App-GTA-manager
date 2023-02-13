@@ -40,6 +40,7 @@ export default {
     },
 
     methods: {
+        
          /**
          * retourne à la route précédente
          * 
