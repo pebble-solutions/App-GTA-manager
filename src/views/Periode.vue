@@ -162,9 +162,10 @@ export default {
                     'df': date.format(date.addDays(startDate, +6), 'YYYY-MM-DD'),
                     'group_by_personnel': true,
                     'structure__personnel_id': this.personnelId,
+                    'include_absence': true,
                 });
             })
-            .then((dataByPersonnel) => {                
+            .then((dataByPersonnel) => {               
                 this.refreshPersonnel(dataByPersonnel.personnels);
                 this.$router.push('/week/'+ this.$route.params.id);
             })

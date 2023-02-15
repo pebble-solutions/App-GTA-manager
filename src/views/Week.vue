@@ -134,7 +134,8 @@ export default {
             let query = {
                 dd: this.semaine.dd,
                 df: this.semaine.df,
-                group_by_personnel: true
+                group_by_personnel: true,
+                include_absence: true,
             };
 
             if (this.selectedPersonnels.length) {
@@ -189,6 +190,7 @@ export default {
 
             this.$app.apiGet(apiUrl, this.declarationQuery)
             .then( (data) => {
+                console.log(data)
                 this.setPersonnel(data.personnels);
             })
             .catch(this.$app.catchError).finally(this.pending.week = false);

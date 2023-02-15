@@ -68,6 +68,7 @@ export default {
                         dd: this.semaine.dd,
                         df: this.semaine.df,
                         group_by_personnel: true,
+                        include_absence : true,
                         structure__personnel_id: this.structure__personnel_id
                     }).then(data => {
                         return this.addPersonnel(data.personnels[0]);
