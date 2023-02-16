@@ -7,7 +7,7 @@
 
             <div class="card-body" v-if="showDetails"> 
 
-                <AbsenceForm :periode="periode" :personnel="personnel" :etatAbsence="periode.valider" v-if="absenceExist"/>
+                <AbsenceInfos :periode="periode" :personnel="personnel" :etatAbsence="periode.valider" v-if="absenceExist"/>
 
                 <div class="d-grid mb-2" v-if="editable"> 
                     <router-link :to="'/week/'+$route.params.id+'/periode/'+periode.id" v-slot="{href, navigate}" custom>
@@ -80,7 +80,7 @@ import StdItem from './StdItem.vue';
 import GtaDeclarationItem from './GtaDeclarationItem.vue';
 import PeriodeCardHeader from './PeriodeCardHeader.vue';
 import NoteButton from '../comment/NoteButton.vue';
-import AbsenceForm from './AbsenceForm.vue'
+import AbsenceInfos from './AbsenceInfos.vue'
 
 export default {
     props: {
@@ -224,7 +224,7 @@ export default {
         
     },
     
-    components: { StdItem, GtaDeclarationItem, PeriodeCardHeader, NoteButton, AbsenceForm },
+    components: { StdItem, GtaDeclarationItem, PeriodeCardHeader, NoteButton, AbsenceInfos },
     
     updated() {
         this.$emit('change');

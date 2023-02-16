@@ -190,7 +190,6 @@ export default {
 
             this.$app.apiGet(apiUrl, this.declarationQuery)
             .then( (data) => {
-                console.log(data)
                 this.setPersonnel(data.personnels);
             })
             .catch(this.$app.catchError).finally(this.pending.week = false);

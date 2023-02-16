@@ -130,10 +130,23 @@ export default {
             this.$router.push({name:'Validation'})
         },
 
+        myFunction() {
+        let person = prompt("Vous avez modifié les informations suivantes : " + +". Apportez une justification.:", "");
+        if (person === null || person === "") {
+              alert("Entrez un commentaire");
+            this.myFunction()
+        } else {
+            console.log(person);
+        }
+        },
+
         /**
          * Envoi a l'api les nouvelles données du pointage édité
          */
         recordPeriode() {
+            
+            this.myFunction();
+
             let urlApi = 'gtaPeriode/POST/' + this.periodeId;
             let query = {};
 
