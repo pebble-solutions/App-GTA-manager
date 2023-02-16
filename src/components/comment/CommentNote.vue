@@ -1,25 +1,52 @@
 <template>
 
-    <div class="d-flex align-items-start text-muted" >
-        <UserImage :name="note.login_pseudo" size="user-image-lg" className="me-2" />
+    <div class="d-flex align-items-start text-muted comment-note">
+        <!--<UserImage :name="note.login_pseudo" className="me-2" />-->
 
-        <i class="bi bi-circle-fill align-self-center mx-2"></i>
+        <span class="comment-note-icon">
+            <i class="bi bi-card-text me-4 ms-2"></i>
+        </span>
 
-        <div class="w-100 d-flex justify-content-between">
+        <div class="w-100  fs-7">
             <div>
-                <div>
-                    Le {{ getDate(note.date) }} par <strong>{{ note.login_pseudo }}</strong> 
-                </div>
-                <div v-html="note.note__md" class="note-content mt-2"></div>
+                Le {{ getDate(note.date) }} par <strong>{{ note.login_pseudo }}</strong> 
             </div>
+            <div v-html="note.note__md" class="note-content"></div>
         </div>
     </div>
 
- </template>
+</template>
+
+<style lang="scss">
+.note-content {
+    p:last-child {
+        margin-bottom: 0px;
+    }
+}
+
+.comment-note {
+    position:relative;
+}
+
+.comment-note::before {
+    z-index: 1;
+    position:absolute;
+    content: '';
+    top: 0px;
+    bottom: 0px;
+    left: 15px;
+    border-right: 1px dashed rgb(200,200,200);
+}
+
+.comment-note-icon {
+    z-index:5;
+    background-color: white;
+}
+</style>
 
 <script>
 
-import UserImage from '../pebble-ui/UserImage.vue'
+//import UserImage from '../pebble-ui/UserImage.vue'
 
 export default {
         props: {
@@ -33,7 +60,8 @@ export default {
              * 
              * @param {Date} currentDate  Sql Date
              */
-            getDate(currentDate){
+            getDate(currentDate) {
+                if (!currentDate) return "Sans date";
                 let dd = currentDate.slice(8,10);
                 let mm = currentDate.slice(5,7);
                 let yyyy = currentDate.slice(0,4);
@@ -41,7 +69,7 @@ export default {
             },
         },
         
-        components: {UserImage}
+        //components: {UserImage}
 }
 
 </script>

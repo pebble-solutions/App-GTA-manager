@@ -20,7 +20,7 @@
     <hr v-if="notes.length"/>
 
     <div class=" list-group list-group-flush container">
-        <div v-for="note in notes" :key="'note-'+note.id" class="list-group-item" :class="getNoteClass(note)">
+        <div v-for="(note, index, ) in notes" :key="'note-'+note.id" class="list-group-item" :class="getNoteClass(note, index)">
             <CommentNote :note="note" v-if="note.type === 'note'"/>
             <Comment :note="note" :periode="periode" v-else/>
         </div> 
@@ -62,15 +62,22 @@ export default {
          * Retourne la liste des classe cssen fonction de l'etat de la note
          * 
          * @param {object} note 
+         * @param {number} index Index de la note dans la collection des notes
          * 
          * @return {string}
          */
-        getNoteClass(note) {
+        getNoteClass(note, index) {
             let className = '';
+            const next = this.notes[index+1];
+
             if (note.isMine) {
                 if (note.type !== 'note') {
                     className += 'bg-primary text-dark bg-opacity-10';
                 }
+            }
+
+            if (note.type == 'note' && next?.type == 'note') {
+                className += 'border-0';
             }
             return className
         },
