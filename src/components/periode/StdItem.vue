@@ -4,10 +4,16 @@
             {{ StdDiff.true }}
         </div>
         <div class="timeline">
-            <div class="timeline-item fs-6"   v-if="StructureTempsDeclaration.dd != StructureTempsDeclaration.dd_finale">
-                <span class="timeline-icon text-secondary"><i class="bi bi-exclamation-diamond"></i></span>
-                <span class="timeline-label text-black-50" style="text-decoration : line-through">
+            <div class="timeline-item text-secondary fs-6"   v-if="StructureTempsDeclaration.dd != StructureTempsDeclaration.dd_finale">
+                <span class="timeline-icon"><i class="bi bi-exclamation-diamond"></i></span>
+                <span class="timeline-label" style="text-decoration : line-through">
                     {{dateToTime(StructureTempsDeclaration.dd)}}
+                </span>
+            </div>
+            <div class="timeline-item fs-6 text-warning"   v-if="StructureTempsDeclaration.dd != StructureTempsDeclaration.dd_record">
+                <span class="timeline-icon"><i class="bi bi-exclamation-diamond"></i></span>
+                <span class="timeline-label" style="text-decoration : line-through">
+                    {{dateToTime(StructureTempsDeclaration.dd_record)}}
                 </span>
             </div>
             <div class="timeline-item fs-6">

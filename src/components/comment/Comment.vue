@@ -1,7 +1,7 @@
 <template>
 
     <div class="d-flex align-items-start" >
-        <UserImage :name="note.login_pseudo" size="user-image-lg" className="me-2" />
+        <UserImage :name="note.login_pseudo" className="me-3" />
         
         <EditNote 
             :commentValue="note.note"
@@ -30,7 +30,7 @@
        </div>
     </div>
 
- </template>
+</template>
 
 <script>
 
@@ -56,7 +56,10 @@ export default {
              * 
              * @param {Date} currentDate  Sql Date
              */
-            getDate(currentDate){
+            getDate(currentDate) {
+
+                if (!currentDate) return 'Sans date';
+                
                 let dd = currentDate.slice(8,10);
                 let mm = currentDate.slice(5,7);
                 let yyyy = currentDate.slice(0,4);
