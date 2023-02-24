@@ -19,7 +19,7 @@
                 <label class="form-label">Date de début</label>
                 <div class="d-flex align-items-content">
                     <Datepicker class="pe-2" :enableTimePicker="false" position="left" format="dd/MM/yyyy" v-model="tmpStd.dd_date" readonly></Datepicker>
-                    <Datepicker class="ps-2" timePicker modeHeight="120" postion="right" v-model="tmpStd.dd_time" autoApply required>
+                    <Datepicker class="ps-2" timePicker modeHeight="120" postion="right" format="HH:mm" v-model="tmpStd.dd_time" autoApply required>
                         <template #input-icon>
                             <i class="bi bi-clock px-2"></i>
                         </template>
@@ -31,7 +31,7 @@
                 <label class="form-label">Date de fin</label>
                 <div class="d-flex align-items-content">
                     <Datepicker class="pe-2" :enableTimePicker="false" position="left" format="dd/MM/yyyy" v-model="tmpStd.df_date" :min-date="minDate" :max-date="maxDate" :startDate="minDate" :preventMinMaxNavigation="true" autoApply required></Datepicker>
-                    <Datepicker class="ps-2" timePicker modeHeight="120" postion="right" v-model="tmpStd.df_time" autoApply required>
+                    <Datepicker class="ps-2" timePicker modeHeight="120" postion="right" format="HH:mm" v-model="tmpStd.df_time" autoApply required>
                         <template #input-icon>
                             <i class="bi bi-clock px-2"></i>
                         </template>
@@ -68,7 +68,7 @@
                         <label class="form-label">Date de fin de pause</label>
                         <div class="d-flex align-items-content">
                             <Datepicker class="pe-2" :enableTimePicker="false" position="left" format="dd/MM/yyyy" v-model="tmpStd.dfp_date" :min-date="minDate" :max-date="maxDate" :startDate="minDate" :preventMinMaxNavigation="true" autoApply></Datepicker>
-                            <Datepicker class="ps-2" timePicker modeHeight="120" postion="right" v-model="tmpStd.dfp_time" autoApply>
+                            <Datepicker class="ps-2" timePicker modeHeight="120" postion="right" format="HH:mm" v-model="tmpStd.dfp_time" autoApply>
                                 <template #input-icon>
                                     <i class="bi bi-clock px-2"></i>
                                 </template>
@@ -118,13 +118,15 @@ export default {
             maxDate: null,
             pending: {
                 std: false
-            }
+            },
+
+            stdTemporaly : {}
         }
     },
 
     components: {Datepicker},
 
-    emits: ['updated'],
+    emits: ['updated', 'upstd'],
 
     watch: {
         /**
@@ -134,7 +136,33 @@ export default {
         std() {
             this.tmpStd = this.std;
             this.prepareDateTimeValues();
-        }
+        },
+
+        /**
+         * Si une nouvelle valeur de tmpStd est reçu, on le compare a la première valeur de chargement de std: 
+         *  - Si elle sont différentes, on envoie un emits à l'élément parent de la modification
+         */
+        tmpStd: {
+            handler(newValue , oldValue) {
+                if (!oldValue.id){
+                    this.stdTemporaly = JSON.parse( JSON.stringify(newValue) );
+                }
+
+                if (newValue.dd_time.hours != this.stdTemporaly.dd_time.hours || newValue.dd_time.minutes != this.stdTemporaly.dd_time.minutes) {
+                    this.$emit('upstd', "Dd")
+                }
+                if (newValue.df_time.hours != this.stdTemporaly.df_time.hours || newValue.df_time.minutes != this.stdTemporaly.df_time.minutes) {
+                    this.$emit('upstd', "Df")
+                }
+                if (newValue.dpd_time.hours != this.stdTemporaly.dpd_time.hours || newValue.dpd_time.minutes != this.stdTemporaly.dpd_time.minutes) {
+                    this.$emit('upstd', "Dpd")
+                }
+                if (newValue.dfp_time.hours != this.stdTemporaly.dfp_time.hours || newValue.dfp_time.minutes != this.stdTemporaly.dfp_time.minutes) {
+                    this.$emit('upstd', "Dfp")
+                }
+            },
+            deep: true
+        } 
     },
 
     computed: {
@@ -262,7 +290,6 @@ export default {
                     this.pending.std = false;
                 });
             }
-            
         }
         
     },

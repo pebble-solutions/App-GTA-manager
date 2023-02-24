@@ -14,7 +14,7 @@
             </div>
             
             <div :class="{'pe-none' : gta_periode.valider !== null }">
-                <StdForm :std="std" v-for="std in stds" :key="'std-'+std.id" @delete="deleteStd(std.id)" @updated="importGtaPeriode()" /> 
+                <StdForm :std="std" v-for="std in stds" :key="'std-'+std.id" @delete="deleteStd(std.id)" @upstd=" analyseStd($event)" @updated="importGtaPeriode()" /> 
             </div>
 
             <div class="d-grid">
@@ -64,6 +64,7 @@ export default {
                 gta_declarations: []
             },
             removedStd: false,
+            modifAdd: []
         }
     },
 
@@ -130,66 +131,97 @@ export default {
             this.$router.push({name:'Validation'})
         },
 
-        myFunction() {
-        let person = prompt("Vous avez modifié les informations suivantes : " + +". Apportez une justification.:", "");
-        if (person === null || person === "") {
-              alert("Entrez un commentaire");
-            this.myFunction()
-        } else {
-            console.log(person);
-        }
-        },
-
         /**
-         * Envoi a l'api les nouvelles données du pointage édité
+         * Crée un prompt pour l'ajout de la justification de modification ou de création d'une période
+         * 
+         * @param {string} preRoute 
+         * 
+         * @return {string} Commentaire de justification
          */
-        recordPeriode() {
-            
-            this.myFunction();
+        justificationModal(preRoute) {
 
-            let urlApi = 'gtaPeriode/POST/' + this.periodeId;
-            let query = {};
+            let message
 
-            this.gta_periode.structure_temps_declarations.forEach(std => {
-                std.dd_correction = date.format(std.dd_date, 'YYYY-MM-DD') + ' ' + padTime(std.dd_time.hours) + ':' + padTime(std.dd_time.minutes);
-                std.df_correction = date.format(std.df_date, 'YYYY-MM-DD') + ' ' + padTime(std.df_time.hours) + ':' + padTime(std.df_time.minutes);
-                std.dpd_correction = std.dpd_date ? date.format(std.dpd_date, 'YYYY-MM-DD') + ' ' + padTime(std.dpd_time.hours) + ':' + padTime(std.dpd_time.minutes) : null;
-                std.dfp_correction = std.dfp_date ? date.format(std.dfp_date, 'YYYY-MM-DD') + ' ' + padTime(std.dfp_time.hours) + ':' + padTime(std.dfp_time.minutes) : null;
-            });
-
-            query.structure_temps_declarations = JSON.stringify(this.gta_periode.structure_temps_declarations);
-
-            if(this.gta_declarations) {
-                query.gta_declarations = JSON.stringify(this.gta_declarations);
+            if  ( preRoute) {
+                message = prompt("Vous avez créé une nouvelle periode. Apportez une justification :", "");
+            } else {
+                message = prompt("Vous avez modifié les informations suivantes : " + this.modifAdd.filter((x, i) => this.modifAdd.indexOf(x) === i).toString() +". Apportez une justification :", "");
             }
 
-            this.pending.periode = true;
+            if (message === "") {
+                alert("Entrez un commentaire");
+                this.justificationModal(preRoute)
+            } else if (message !== null) {
+                return message
+            }
+            
+        },
+        
+        /**
+         * Envoi a l'api les nouvelles données du pointage édité aprés avoir récupéré le commentaire de justification de l'utilisateur
+         */
+        recordPeriode() {
 
-            this.$app.apiPost(urlApi, query)
-            .then(() => {      
-                let urlApiCounters = "structureTempsDeclaration/GET/listDeclarations"
-                let startDate = this.getStartDateOfISOWeek(this.$route.params.id.substr(4,2), this.$route.params.id.substr(0,4));
+            let justification
+        
+            if (this.$router.options.history.state.back == '/week/'+ this.$route.params.id + '/insert') {
+                justification = this.justificationModal("Insert")
+            } else if (this.modifAdd.length) {
+                justification = this.justificationModal()
+            } else {
+                confirm("Veuillez modifier un parametre avant d'enregistrer ou bien annuler.")
+            }
 
-                return this.$app.apiGet(urlApiCounters, {
-                    'dd': date.format(startDate, 'YYYY-MM-DD') ,
-                    'df': date.format(date.addDays(startDate, +6), 'YYYY-MM-DD'),
-                    'group_by_personnel': true,
-                    'structure__personnel_id': this.personnelId,
-                    'include_absence': true,
+            
+            if (justification) {
+
+                let urlApi = 'gtaPeriode/POST/' + this.periodeId;
+                let query = {};
+    
+                this.gta_periode.structure_temps_declarations.forEach(std => {
+                    std.dd_correction = date.format(std.dd_date, 'YYYY-MM-DD') + ' ' + padTime(std.dd_time.hours) + ':' + padTime(std.dd_time.minutes);
+                    std.df_correction = date.format(std.df_date, 'YYYY-MM-DD') + ' ' + padTime(std.df_time.hours) + ':' + padTime(std.df_time.minutes);
+                    std.dpd_correction = std.dpd_date ? date.format(std.dpd_date, 'YYYY-MM-DD') + ' ' + padTime(std.dpd_time.hours) + ':' + padTime(std.dpd_time.minutes) : null;
+                    std.dfp_correction = std.dfp_date ? date.format(std.dfp_date, 'YYYY-MM-DD') + ' ' + padTime(std.dfp_time.hours) + ':' + padTime(std.dfp_time.minutes) : null;
                 });
-            })
-            .then((dataByPersonnel) => {               
-                this.refreshPersonnel(dataByPersonnel.personnels);
-                this.$router.push('/week/'+ this.$route.params.id);
-            })
-            .catch(this.$app.catchError)
-            .finally(() => {
-                this.pending.periode = false;
-            });
+    
+                query.structure_temps_declarations = JSON.stringify(this.gta_periode.structure_temps_declarations);
+    
+                if(this.gta_declarations) {
+                    query.gta_declarations = JSON.stringify(this.gta_declarations);
+                }
+
+                query.motif = justification;
+    
+                this.pending.periode = true;
+    
+                this.$app.apiPost(urlApi, query)
+                .then(() => {      
+                    let urlApiCounters = "structureTempsDeclaration/GET/listDeclarations"
+                    let startDate = this.getStartDateOfISOWeek(this.$route.params.id.substr(4,2), this.$route.params.id.substr(0,4));
+    
+                    return this.$app.apiGet(urlApiCounters, {
+                        'dd': date.format(startDate, 'YYYY-MM-DD') ,
+                        'df': date.format(date.addDays(startDate, +6), 'YYYY-MM-DD'),
+                        'group_by_personnel': true,
+                        'structure__personnel_id': this.personnelId,
+                        'include_absence': true,
+                    });
+                })
+                .then((dataByPersonnel) => {               
+                    this.refreshPersonnel(dataByPersonnel.personnels);
+                    this.$router.push('/week/'+ this.$route.params.id);
+                })
+                .catch(this.$app.catchError)
+                .finally(() => {
+                    this.pending.periode = false;
+                });
+            }
+
         },
 
         /**
-         * Retourn la date de debut en fonction du numero de semaine et de l'année fournit
+         * Retourne la date de debut en fonction du numero de semaine et de l'année fournit
          * 
          * @param Integer   week        numero de semaine
          * @param Integer   year        numero de l'année
@@ -263,6 +295,14 @@ export default {
          */
         addDeclaration(declaration) {
             this.gta_periode.gta_declarations.push(declaration);
+            this.modifAdd.push(" Liste des déclarations ")
+        },
+
+        /**
+         *  Analyse les nouvelles données STD pour ajouter les modification dans le tableau de modification
+         */
+        analyseStd(newValue) {
+            this.modifAdd.push(' ' + newValue)
         },
 
         /**

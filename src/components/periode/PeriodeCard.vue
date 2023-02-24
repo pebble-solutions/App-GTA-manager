@@ -7,7 +7,7 @@
 
             <div class="card-body" v-if="showDetails"> 
 
-                <AbsenceInfos :periode="periode" :personnel="personnel" :etatAbsence="periode.valider" v-if="absenceExist"/>
+                <AbsenceInfos :personnel="personnel" :etatAbsence="periode.valider" v-if="absenceExist"/>
 
                 <div class="d-grid mb-2" v-if="editable"> 
                     <router-link :to="'/week/'+$route.params.id+'/periode/'+periode.id" v-slot="{href, navigate}" custom>
