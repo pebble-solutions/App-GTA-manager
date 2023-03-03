@@ -192,14 +192,12 @@ export default {
 		 * @returns {Object}
 		 */
 		selectedWeek() {
-			console.log("Selected Week");
 			return getWeekFromYW(this.currentWeek, this.semaines);
 		}
 	},
 	
 	watch: {
 		'$route' (to) {
-			console.log("Watch route");
 				this.currentWeek = to.params.id;
 		}
 	},	
@@ -228,7 +226,6 @@ export default {
 		 * @param {Integer} structureId
 		 */
 		switchStructure(structureId) {
-			console.log("switchStructure");
 			this.$router.push('/');
 
 			this.$store.dispatch('switchStructure', structureId);
@@ -424,7 +421,6 @@ export default {
 		 * Lance une recherche depuis le formulaire de recherche des semaines.
 		 */
 		searchWeek() {
-			console.log("Search Week");
 			let year = this.searchDate[0].getFullYear();
 			let week = this.getWeekNumber(this.searchDate[0]);
 
@@ -505,8 +501,6 @@ WeekToolsDropdown
 	},
 
 	mounted() {
-		console.log("Mounted");
-		
 		// if (!this.$route.params.id) {
 		// 	this.$router.push('/');
 		// 	console.log("Go Home")

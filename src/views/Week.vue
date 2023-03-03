@@ -84,7 +84,6 @@ export default {
                 'sunday_hours': 'Heures du dimanche'
             },
             rowspan:[]
-
         }
     },
 
@@ -192,7 +191,7 @@ export default {
             .then( (data) => {
                 this.setPersonnel(data.personnels);
             })
-            .catch(this.$app.catchError).finally(this.pending.week = false);
+            .catch(this.$app.catchError).finally(() => this.pending.week = false);
         },
 
 
