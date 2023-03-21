@@ -1,6 +1,10 @@
 <template>
     <div>
-        <!-- <div class="alert alert-primary text-center" v-if="StdDiff">
+        <!-- 
+            Cette partie du code semble être un test de Jules.
+            Je me suis permis de commenter afin que ça ne s'affiche pas en prod.
+            Guillaume.
+        <div class="alert alert-primary text-center" v-if="StdDiff">
             {{ StdDiff.true }}
         </div> -->
         <div class="timeline">
