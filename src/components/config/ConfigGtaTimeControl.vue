@@ -182,10 +182,9 @@
             </tbody>
         </table>
         <template v-else>
-            <div v-if="!pending.time_controls">
-                <div class="spinner-border text-secondary" role="status">
-                    <span>Chargement...</span>
-                </div>
+            <div v-if="pending.time_controls" class="d-flex align-items-center">
+                <div class="spinner-border text-secondary" role="status"></div>
+                <span class="ms-2">Chargement...</span>
             </div>
             <div class="alert alert-info" v-else>
                 Il n'y a pas d'actions enregistrées. <a href="#!" @click.prevent="newTimeControl()" class="alert-link">Créer votre première action</a>
