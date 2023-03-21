@@ -1,8 +1,8 @@
 <template>
     <div>
-        <div class="alert alert-primary text-center" v-if="StdDiff">
+        <!-- <div class="alert alert-primary text-center" v-if="StdDiff">
             {{ StdDiff.true }}
-        </div>
+        </div> -->
         <div class="timeline">
             <div class="timeline-item text-secondary fs-6"   v-if="StructureTempsDeclaration.dd != StructureTempsDeclaration.dd_finale">
                 <span class="timeline-icon"><i class="bi bi-exclamation-diamond"></i></span>
