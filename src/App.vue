@@ -508,7 +508,7 @@ WeekToolsDropdown
 		console.log("Mounted");
 		
 		// if (!this.$route.params.id) {
-		// 	this.$router.push('/');
+		// 	this.$router.push('/');       
 		// 	console.log("Go Home")
 		// } else {
 		// 	this.$router.push(this.$route);
