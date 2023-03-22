@@ -7,7 +7,7 @@
 
             <div class="card-body" v-if="showDetails"> 
 
-                <AbsenceInfos :personnel="personnel" :etatAbsence="periode.valider" v-if="absenceExist"/>
+                <AbsenceInfos :absence="periode.gta_absence" v-if="absenceExist"/>
 
                 <div class="d-grid mb-2" v-if="editable"> 
                     <router-link :to="'/week/'+$route.params.id+'/periode/'+periode.id" v-slot="{href, navigate}" custom>
@@ -200,11 +200,10 @@ export default {
         /**
          * Retourne un 'booléen' si sur la période il y a une absence
          * 
-         * @return {any} gta_absence_id
+         * @return {number} gta_absence_id
          */
-         absenceExist(){
-            let currentPeriode = this.personnel.gta_periodes.find(periode => this.periode.id == periode.id);
-            return currentPeriode.gta_absence_id 
+        absenceExist() {
+            return this.periode.gta_absence_id;
         }
 
     },

@@ -169,7 +169,7 @@ export default {
             } else if (this.modifAdd.length) {
                 justification = this.justificationModal()
             } else {
-                confirm("Veuillez modifier un parametre avant d'enregistrer ou bien annuler.")
+                confirm("Veuillez modifier un parametre avant d'enregistrer ou bien annuler.");
             }
 
             
@@ -272,6 +272,8 @@ export default {
                 df: this.periodeDateSql+' 18:00:00',
                 gta__periode_id: this.gta_periode.id
             });
+
+            this.modifAdd.push(`Ajout d'un pointage`);
         },
 
         /**
@@ -286,6 +288,8 @@ export default {
                 this.gta_periode.structure_temps_declarations.splice(index, 1);
                 this.removedStd = true;
             }
+
+            this.modifAdd.push(`Suppression d'un pointage`);
         },
 
         /**
