@@ -7,7 +7,7 @@
 
         <table class="table table-bordered table-sm fs-7" id="week-personnels-table">
             <PersonnelWeekRow 
-                v-for="personnel in personnelsDeclarations" 
+                v-for="personnel in getPersonnelAlphabetically" 
                 :key="'personnel-'+personnel.id"
                 :personnel="personnel"
                 :weekDays="weekDays"
@@ -91,6 +91,15 @@ export default {
 
         ...mapState(['periodes_selected', 'login', 'personnelsDeclarations', 'semaines', 'gta_codages', 'selectedPersonnels']),
 
+         /**
+         * Retourne la liste de personnel trié par ordre alphabétique
+         * 
+         * @return {Array}
+         */
+         getPersonnelAlphabetically(){
+            return this.sortPersonnelAlphabetically(this.personnelsDeclarations);          
+        },
+
         /**
          * Retourne la liste des jours entre dd et df.
          * La valeur retournée est une collection d'objets Date
@@ -166,6 +175,23 @@ export default {
 
     methods: {
         ...mapActions(['resetPeriodeSelection', 'refreshPersonnel', 'setPersonnel', 'resetPersonnel', 'refreshPersonnelGtaPeriodes', 'refreshSemaines']),
+
+        /**
+         * Tri la liste de personnel par ordre alphabetique
+         * 
+         * @param {Array} personnels 
+         */
+        sortPersonnelAlphabetically(personnels) {
+
+            let personnelAlphabetically = personnels
+
+            if (personnelAlphabetically.length <= 1) {
+                return personnelAlphabetically
+            } else { 
+                return personnelAlphabetically.sort((a, b) => a.cache_nom.localeCompare(b.cache_nom));
+            }
+
+        },
 
         /**
          * Get the day number and month number 
