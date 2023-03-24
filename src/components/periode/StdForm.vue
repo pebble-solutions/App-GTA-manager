@@ -126,7 +126,7 @@ export default {
 
     components: {Datepicker},
 
-    emits: ['updated', 'upstd'],
+    emits: ['updated', 'upstd','delete'],
 
     watch: {
         /**
@@ -248,7 +248,7 @@ export default {
          */
         deleteStd() {
             if (confirm("Supprimer le pointage ?")) {
-                this.$emit("delete");
+                this.$emit('delete');
             }
         },
 
