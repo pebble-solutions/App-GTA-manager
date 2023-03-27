@@ -91,6 +91,18 @@ export default {
 
         ...mapState(['periodes_selected', 'login', 'personnelsDeclarations', 'semaines', 'gta_codages', 'selectedPersonnels']),
 
+<<<<<<< HEAD
+=======
+         /**
+         * Retourne la liste de personnel trié par ordre alphabétique
+         * 
+         * @return {Array}
+         */
+        getPersonnelAlphabetically(){
+            return this.sortPersonnelAlphabetically(this.personnelsDeclarations);          
+        },
+
+>>>>>>> 00113ac49405d3897618723efd9f4a2ea244d77e
         /**
          * Retourne la liste des jours entre dd et df.
          * La valeur retournée est une collection d'objets Date
@@ -273,7 +285,6 @@ export default {
             .then((data) => {
                 this.refreshPersonnelGtaPeriodes(data);
                 this.resetPeriodeSelection();
-                this.pending.validation = false;
 
                 let urlApi = "gtaPeriode/GET/listWeeksAnalytics?week_start=" + this.$route.params.id + "&week_end=" + this.$route.params.id + "&order_direction=ASC";
 
@@ -291,7 +302,8 @@ export default {
                 return this.$app.apiGet(urlApiCounters, this.declarationQuery);
             }).then((data) => {
                 this.refreshPersonnel(data.personnels);
-            }).catch(this.$app.catchError);
+            }).catch(this.$app.catchError)
+            .finally(() => this.pending.validation = false);
         },
 
         /**

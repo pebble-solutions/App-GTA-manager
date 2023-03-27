@@ -89,3 +89,23 @@ export function toSqlDate(date, useTime) {
 
 	return dateSql;
 }
+
+/**
+ * Retourne la date SQL au format H:MM ou J+1 H:MM.
+ *
+ * @param {string} val La date à convertir
+ * @param {string} refVal La valeur précédente (pour avoir le J+1 sur la date de fin)
+ *
+ * @return {string}
+ */
+export function dateToTime(val, refVal) {
+    let date = new Date(sqlDateToIso(val));
+    let str = date.getHours() + ":" + padTime(date.getMinutes());
+    if (refVal) {
+        let refDate = new Date(sqlDateToIso(refVal));
+        if (refDate.getDate() != date.getDate()) {
+            str = "J+1 " + str;
+        }
+    }
+    return str;
+}
