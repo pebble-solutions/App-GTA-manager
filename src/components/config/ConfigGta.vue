@@ -30,6 +30,22 @@
                 </div>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="mb-3">
+                    <label for="MODULE_PAIE_DATE_DELTA_WARNING" class="form-label">Tolérance <admin-pill /></label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="MODULE_PAIE_DATE_DELTA_WARNING" 
+                            v-model="tmpConfig.MODULE_PAIE_DATE_DELTA_WARNING">
+                        <span class="input-group-text">Minutes</span>
+                    </div>
+                    <div class="form-text">Tolérance entre l'heure de pointage réelle et l'heure de pointage déclarée.
+                        Au delà de cette tolérance, l'alerte de pointage hors délais s'affiche.
+                    </div>
+                </div>
+            </div>
+        </div>
     
         <hr>
     

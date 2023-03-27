@@ -8,24 +8,12 @@
             {{ StdDiff.true }}
         </div> -->
         <div class="timeline">
-            <div class="timeline-item text-secondary fs-6"   v-if="StructureTempsDeclaration.dd != StructureTempsDeclaration.dd_finale">
-                <span class="timeline-icon"><i class="bi bi-exclamation-diamond"></i></span>
-                <span class="timeline-label" style="text-decoration : line-through">
-                    {{dateToTime(StructureTempsDeclaration.dd)}}
-                </span>
-            </div>
-            <div class="timeline-item fs-6 text-warning"   v-if="StructureTempsDeclaration.dd != StructureTempsDeclaration.dd_record">
-                <span class="timeline-icon"><i class="bi bi-exclamation-diamond"></i></span>
-                <span class="timeline-label" style="text-decoration : line-through">
-                    {{dateToTime(StructureTempsDeclaration.dd_record)}}
-                </span>
-            </div>
-            <div class="timeline-item fs-6">
-                <span class="timeline-icon text-secondary"><i class="bi bi-stopwatch"></i></span>
-                <span class="timeline-label">
-                    {{time_start}}
-                </span>
-            </div>
+
+            <timeline-item
+                :date_origin="StructureTempsDeclaration.dd"
+                :date_finale="StructureTempsDeclaration.dd_finale"
+                :date_record="StructureTempsDeclaration.dd_record"
+            />
 
             <div class="pb-3"></div>
 
@@ -39,21 +27,20 @@
                 <span class="timeline-label">{{pause_duration}}</span>
             </div>
 
-            <div class="timeline-item fs-6"   v-if="StructureTempsDeclaration.df != StructureTempsDeclaration.df_finale">
-                <span class="timeline-icon text-secondary"><i class="bi bi-exclamation-diamond"></i></span>
-                <span class="timeline-label text-black-50" style="text-decoration : line-through">
-                    {{dateToTime(StructureTempsDeclaration.df)}}
-                </span>
-            </div>
-            <div class="timeline-item fs-6" :class="{'text-warning' : StructureTempsDeclaration.clock_status !=='over'}" >
-                <span class="timeline-icon"><i class="bi bi-check2-circle"></i></span>
-                <span class="timeline-label">{{time_end}}</span>
-            </div>
+            <timeline-item
+                :date_origin="StructureTempsDeclaration.df"
+                :date_finale="StructureTempsDeclaration.df_finale"
+                :date_record="StructureTempsDeclaration.df_record"
+                :ref_origin="StructureTempsDeclaration.dd"
+                :ref_finale="StructureTempsDeclaration.dd_finale"
+                :ref_record="StructureTempsDeclaration.dd_record"
+                :clock_status="StructureTempsDeclaration.clock_status"
+            />
         </div>
     </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 
 .timeline {
     position:relative;
@@ -90,34 +77,24 @@
 
 <script>
 
-import { sqlDateToIso, padTime, calculateDiffDate } from '../../js/date'
+import { calculateDiffDate, dateToTime } from '../../js/date'
+import TimelineItem from './TimelineItem.vue';
 
 export default {
-    data(){
-        return{
+
+    components: { TimelineItem },
+
+    data() {
+        return {
             MODULE_PAIE_DATE_DELTA_WARNING: 15
         };
     },
+
     props: {
         StructureTempsDeclaration: Object
     },
-    computed: {
-        /**
-         * Retourne l'heure de début de pointage H:MM
-         * @return {string}
-         */
-        time_start() {
-            return this.dateToTime(this.StructureTempsDeclaration.dd_finale);
-        },
 
-        /**
-         * Retourne l'heure de fin de pointage H:MM
-         * @return {string}
-         */
-        time_end() {
-            let df = this.StructureTempsDeclaration.df_finale;
-            return df ? this.dateToTime(df, this.StructureTempsDeclaration.dd_finale) : "En cours";
-        },
+    computed: {
 
         /**
          * Retourne l'heure de début de pause H:MM
@@ -172,15 +149,7 @@ export default {
          * @return {string}
          */
         dateToTime(val, refVal) {
-            let date = new Date(sqlDateToIso(val));
-            let str = date.getHours() + ":" + padTime(date.getMinutes());
-            if (refVal) {
-                let refDate = new Date(sqlDateToIso(refVal));
-                if (refDate.getDate() != date.getDate()) {
-                    str = "J+1 " + str;
-                }
-            }
-            return str;
+            return dateToTime(val, refVal);
         }
     },
 }
