@@ -91,18 +91,6 @@ export default {
 
         ...mapState(['periodes_selected', 'login', 'personnelsDeclarations', 'semaines', 'gta_codages', 'selectedPersonnels']),
 
-<<<<<<< HEAD
-=======
-         /**
-         * Retourne la liste de personnel trié par ordre alphabétique
-         * 
-         * @return {Array}
-         */
-        getPersonnelAlphabetically(){
-            return this.sortPersonnelAlphabetically(this.personnelsDeclarations);          
-        },
-
->>>>>>> 00113ac49405d3897618723efd9f4a2ea244d77e
         /**
          * Retourne la liste des jours entre dd et df.
          * La valeur retournée est une collection d'objets Date

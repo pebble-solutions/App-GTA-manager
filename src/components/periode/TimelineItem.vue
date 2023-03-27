@@ -22,7 +22,7 @@
 <script>
 import { mapState } from 'vuex';
 
-import { dateToTime } from '../../js/date';
+import { dateToTime, diffDate } from '../../js/date';
 
 export default {
     props: {
@@ -72,7 +72,9 @@ export default {
          * @return {bool}
          */
         isToleratedDelta() {
-            return true;
+            const delta = this.config.gta.MODULE_PAIE_DATE_DELTA_WARNING;
+  
+            return Math.abs(diffDate(this.date_record, this.date_finale)) / 60000 < delta;
         }
     },
 
@@ -99,6 +101,6 @@ export default {
         returnWithStatus(val) {
             return this.clock_status !== "over" ? "En cours" : val;
         }
-    }
+    },
 };
 </script>
