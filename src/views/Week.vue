@@ -96,7 +96,7 @@ export default {
          * 
          * @return {Array}
          */
-         getPersonnelAlphabetically(){
+        getPersonnelAlphabetically(){
             return this.sortPersonnelAlphabetically(this.personnelsDeclarations);          
         },
 
@@ -299,7 +299,6 @@ export default {
             .then((data) => {
                 this.refreshPersonnelGtaPeriodes(data);
                 this.resetPeriodeSelection();
-                this.pending.validation = false;
 
                 let urlApi = "gtaPeriode/GET/listWeeksAnalytics?week_start=" + this.$route.params.id + "&week_end=" + this.$route.params.id + "&order_direction=ASC";
 
@@ -317,7 +316,8 @@ export default {
                 return this.$app.apiGet(urlApiCounters, this.declarationQuery);
             }).then((data) => {
                 this.refreshPersonnel(data.personnels);
-            }).catch(this.$app.catchError);
+            }).catch(this.$app.catchError)
+            .finally(() => this.pending.validation = false);
         },
 
         /**
