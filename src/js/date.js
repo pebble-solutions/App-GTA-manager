@@ -1,20 +1,34 @@
 /**
  * Retourne la durée entre deux date au format H:MM
  * 
- * @param {String} sd       
- * @param {String} sf 
+ * @param {string} sd       
+ * @param {string} sf 
  * 
- * @return {String}
+ * @return {string}
  */
 export function calculateDiffDate(sd, sf) {
-    let dd = new Date(sqlDateToIso(sd));
-    let df = new Date(sqlDateToIso(sf));
-
-    let diff = df - dd;
+    let diff = diffDate(sd, sf);
 
     if (diff < 0) diff = 0;
 
     return numberToTimeString(diff);
+}
+
+/**
+ * Retourne l'intervalle entre deux dates en millisecondes
+ * 
+ * @param {string} sd Date de début de l'intervalle 
+ * @param {string} ed Date de fin de l'intervalle 
+ * 
+ * @returns {number} La diférence en milliseconde
+ */
+export function diffDate(sd, ed) {
+    let dd = new Date(sqlDateToIso(sd));
+    let df = new Date(sqlDateToIso(ed));
+
+    let diff = df - dd;
+
+    return diff;
 }
 
 /**
