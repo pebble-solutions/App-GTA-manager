@@ -25,7 +25,7 @@
         </tr>
 
         <template v-if="summary.length != 0">
-            <Summary v-for="(resume, index) in summary" 
+            <SummaryPersonnel v-for="(resume, index) in summary" 
                 :key="'resume-'+index"
                 :id="index"
                 :personnel="personnel"
@@ -34,7 +34,7 @@
                 :gta_codages="gta_codages"
                 :semaine="semaine"
                 :rowspan="rowspan"
-            ></Summary>
+            ></SummaryPersonnel>
         </template>
 
         <tr v-if="personnel" class="personnel-periodes">
@@ -71,7 +71,7 @@
 
 <script>
 
-import Summary from '@/components/Summary.vue';
+import SummaryPersonnel from '@/components/Summary.vue';
 import PersonnelBadge from './PersonnelBadge.vue';
 import { mapActions, mapState } from 'vuex';
 import PeriodeCard from './periode/PeriodeCard.vue';
@@ -102,7 +102,7 @@ export default {
         }
     },
 
-    components: { Summary, PersonnelBadge, PeriodeCard},
+    components: { SummaryPersonnel, PersonnelBadge, PeriodeCard},
 
     methods: {
         ...mapActions(['refreshPersonnelGtaPeriodes']), 
