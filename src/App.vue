@@ -445,7 +445,8 @@ export default {
 
 			this.$app.apiGet('structurePersonnel/GET/list', {
 				archived: null,
-				mls_label: 'fonction,secteur'
+				mls_label: 'fonction,secteur',
+				limit: 'aucune'
 			})
 			.then((data) => {
 				this.$store.commit('personnels', data)
