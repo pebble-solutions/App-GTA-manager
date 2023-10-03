@@ -1,5 +1,13 @@
 <template>
     <div>
+        <div class="btn-group w-100 mb-3">
+            <input type="radio" class="btn-check" name="restriction" id="restriction-radio-active" autocomplete="off" v-model="restriction" value="active">
+            <label class="btn btn-outline-secondary" for="restriction-radio-active">Personnel actif</label>
+
+            <input type="radio" class="btn-check" name="restriction" id="restriction-radio-all" autocomplete="off" v-model="restriction" value="all">
+            <label class="btn btn-outline-secondary" for="restriction-radio-all">Tout le personnel</label>
+        </div>
+
         <div class="px-3">
             <div class="form-check text-nowrap">
                 <input type="checkbox" class="form-check-input" id="ckb-personnel-tous" :checked="!checkedPersonnelsId.length" @click="resetSelection()">
@@ -17,12 +25,15 @@
                         <h5>{{group.nom}}</h5>
                     </label>
                 </div>
-                <div class="form-check text-nowrap" v-for="personnel in group.personnels" :key="'personnel-'+personnel.id">
-                    <input type="checkbox" class="form-check-input" :id="'ckb-personnel-'+personnel.id" :value="personnel.id" v-model="checkedPersonnelsId">
-                    <label class="form-check-label" :for="'ckb-personnel-'+personnel.id">
-                        {{personnel.cache_nom}}
-                    </label>
-                </div>
+                <template  v-for="personnel in group.personnels" :key="'personnel-'+personnel.id">
+                    <div class="form-check text-nowrap" v-if="isDisplayable(personnel)">
+                        <input type="checkbox" class="form-check-input" :id="'ckb-personnel-'+personnel.id" :value="personnel.id" v-model="checkedPersonnelsId">
+                        <label class="form-check-label" :for="'ckb-personnel-'+personnel.id">
+                            {{personnel.cache_nom}}
+                        </label>
+                    </div>
+
+                </template>
             </div>
         </div>
 
@@ -31,6 +42,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import { sqlDateToIso } from '../js/date';
 
 export default {
 
@@ -39,7 +51,8 @@ export default {
     data() {
         return {
             checkedPersonnelsId: [],
-            checkedGroupsId: []
+            checkedGroupsId: [],
+            restriction: "active"
         }
     },
 
@@ -161,6 +174,32 @@ export default {
         isSelected(personnel) {
             let found = this.selectedPersonnels.find(e => e.id == personnel.id);
             return found ? true : false;
+        },
+
+        /**
+         * Retourne vrais si le personnel doit être affiché
+         * 
+         * @param {object} personnel Le personnel à tester
+         */
+        isDisplayable(personnel) {
+            if (this.restriction === "all") {
+                return true;
+            }
+
+            else {
+                if (!personnel.dsortie || personnel.dsortie === "0000-00-00" || personnel.dsortie === "0000-00-00 00:00:00") {
+                    return true;
+                }
+
+                const dateStart = new Date(sqlDateToIso(personnel.dentree));
+                const now = new Date();
+
+                if (dateStart >= now) {
+                    return  true;
+                }
+            }
+
+            return false;
         }
     },
 
