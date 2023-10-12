@@ -5,6 +5,8 @@
     
             <PeriodeCardHeader :GtaPeriode="periode" @click.prevent="toggleSelection()" :selectable="selectable" :hasComment="periode?.notes?.length"></PeriodeCardHeader>
 
+            <imported-warning :show-details="showDetails" v-if="isImported && !isChecked" />
+
             <div class="card-body" v-if="showDetails"> 
 
                 <AbsenceInfos :absence="periode.gta_absence" v-if="absenceExist"/>
@@ -81,6 +83,7 @@ import GtaDeclarationItem from './GtaDeclarationItem.vue';
 import PeriodeCardHeader from './PeriodeCardHeader.vue';
 import NoteButton from '../comment/NoteButton.vue';
 import AbsenceInfos from './AbsenceInfos.vue'
+import ImportedWarning from './ImportedWarning.vue';
 
 export default {
     props: {
@@ -166,6 +169,7 @@ export default {
             if (this.periode.valider === "OUI") return "border-success";
             else if (this.periode.valider === "NON") return "border-danger";
             else if (this.selected) return "border-primary";
+            else if (this.periode.id_edi) return "border-warning";
             else return "border-light";
         },
 
@@ -204,6 +208,28 @@ export default {
          */
         absenceExist() {
             return this.periode.gta_absence_id;
+        },
+
+        /**
+         * Retourne vrais si la période est issue d'un import.
+         * 
+         * Une période est importée lorsque id_edi n'est pas vide
+         * 
+         * @return {bool}
+         */
+        isImported() {
+            return this.periode.id_edi ? true : false;
+        },
+
+        /**
+         * Retourne vrais si la période à été vérifiée.
+         * 
+         * Une période est vérifiée à partir du moment ou elle a un statut de validation.
+         * 
+         * @return {bool}
+         */
+        isChecked() {
+            return this.periode.valider ? true : false;
         }
 
     },
@@ -223,7 +249,7 @@ export default {
         
     },
     
-    components: { StdItem, GtaDeclarationItem, PeriodeCardHeader, NoteButton, AbsenceInfos },
+    components: { StdItem, GtaDeclarationItem, PeriodeCardHeader, NoteButton, AbsenceInfos, ImportedWarning },
     
     updated() {
         this.$emit('change');

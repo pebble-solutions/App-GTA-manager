@@ -1,6 +1,7 @@
 <template>
     <div class="card-header text-center" :class="headerClass">
         <i class="bi bi-lock-fill float-start" v-if="!selectable"></i>
+        <i class="bi bi-sign-merge-left text-warning" v-if="importedIcon"></i>
         <i :class="headerIcon" v-if="headerIcon"></i>
         <i class="bi bi-chat-fill mx-2" v-if="hasComment"></i>{{headerLabel}}
         
@@ -64,6 +65,17 @@ export default {
          */
         headerIcon() {
             return this.GtaPeriode.gta_absence_id ? "bi bi-brightness-high" : null;
+        },
+
+        /**
+         * Retourne true si la période est issue d'un import non vérifié
+         * 
+         * Un import n'est pas vérifié lorsque id_edi a une valeur et que valider est NULL
+         * 
+         * @return {bool}
+         */
+        importedIcon() {
+            return this.GtaPeriode.id_edi && !this.GtaPeriode.valider;
         }
     }
 }
