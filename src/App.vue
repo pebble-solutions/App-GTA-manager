@@ -287,7 +287,7 @@ export default {
 			} else {
 				newWeek = parseInt(week) - nb;
 
-				if(newWeek < 0) {
+				if(newWeek <= 0) {
 					newWeek = leapYear + newWeek;
 					year = parseInt(year) - 1;
 				}
